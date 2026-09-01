@@ -146,6 +146,7 @@ int main(int argc, char** argv) {
     NTHREADS = atoi(argv[4]);
     const char* outfile = argv[5];
     if (argc > 6) LAMBDA = atof(argv[6]);
+    bool skipPsqt = argc > 7 && atoi(argv[7]) != 0;
 
     std::ifstream in(argv[1]);
     std::string line;
@@ -186,6 +187,7 @@ int main(int argc, char** argv) {
         for (int i = 0; i < e.n; i++) {
             if (e.kind == 0) { knobs.push_back({e, i, 0}); knobs.push_back({e, i, 1}); }
             else if (e.kind == 2) {
+                if (skipPsqt) continue;
                 // skip pawn rank 1/8 entries (always 0)
                 if (std::string(e.name).find("pawn") != std::string::npos && (i < 8 || i >= 56)) continue;
                 knobs.push_back({e, i, 0});

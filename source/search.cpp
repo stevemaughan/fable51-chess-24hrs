@@ -1,6 +1,5 @@
 #include "search.h"
 #include "eval.h"
-#include "movepick.h"
 #include <cmath>
 #include <cstdio>
 #include <algorithm>
@@ -8,7 +7,7 @@
 #include <thread>
 
 TranspositionTable TT;
-int MoveOverhead = 30;
+int MoveOverhead = 40;
 extern std::mutex outMutex;
 
 static const int SeeValue[7] = {100, 320, 330, 500, 950, 20000, 0};
@@ -112,7 +111,7 @@ bool Searcher::is_repetition(const Position& pos, int ply) const {
         }
         if (k == pos.key) {
             if (i >= 0) return true;      // repetition inside search tree: treat as draw
-            if (++count >= 1) return true; // one prior occurrence in game + now = twofold; treat as draw
+            if (++count >= 2) return true; // two prior occurrences in game history = threefold
         }
         i -= 2;
         steps += 2;
@@ -171,6 +170,41 @@ void Searcher::print_info(int depth, int score, Stack* ss, int bound) {
     fflush(stdout);
 }
 
+// ---------------------------------------------------------------- move ordering
+static void score_moves(const Searcher& S, const Position& pos, MoveList& ml, Move ttMove, Stack* ss) {
+    for (int i = 0; i < ml.size(); i++) {
+        Move m = ml[i].move;
+        int from = move_from(m), to = move_to(m);
+        int pc = pos.board[from];
+        if (m == ttMove) { ml[i].score = 2000000000; continue; }
+        if (pos.board[to] != NO_PIECE || is_ep(m) || is_promo(m)) {
+            int victim = is_ep(m) ? PAWN : (pos.board[to] == NO_PIECE ? 6 : piece_type(pos.board[to]));
+            int vval = victim == 6 ? 0 : SeeValue[victim];
+            if (is_promo(m)) vval += promo_type(m) == QUEEN ? 900 : -200;
+            int sc = vval * 32 - piece_type(pc) + (victim == 6 ? 0 : S.captHist[pc][to][victim]) / 16;
+            if (see_ge(pos, m, -50)) ml[i].score = 1000000000 + sc;
+            else ml[i].score = -100000000 + sc;
+        } else {
+            if (m == ss->killers[0]) { ml[i].score = 900000000; continue; }
+            if (m == ss->killers[1]) { ml[i].score = 899000000; continue; }
+            if ((ss - 1)->currentMove != MOVE_NONE && (ss - 1)->movedPiece != NO_PIECE &&
+                S.counterMove[(ss - 1)->movedPiece][move_to((ss - 1)->currentMove)] == m) { ml[i].score = 898000000; continue; }
+            int h = S.history[pos.stm][from][to];
+            if ((ss - 1)->contHist) h += (*(ss - 1)->contHist)[pc][to];
+            if ((ss - 2)->contHist) h += (*(ss - 2)->contHist)[pc][to];
+            ml[i].score = h;
+        }
+    }
+}
+
+static inline Move pick_next(MoveList& ml, int idx) {
+    int best = idx;
+    for (int i = idx + 1; i < ml.size(); i++)
+        if (ml[i].score > ml[best].score) best = i;
+    std::swap(ml.list[idx], ml.list[best]);
+    return ml[idx].move;
+}
+
 // ---------------------------------------------------------------- quiescence
 int Searcher::qsearch(Position& pos, int alpha, int beta, Stack* ss) {
     nodes++;
@@ -209,13 +243,17 @@ int Searcher::qsearch(Position& pos, int alpha, int beta, Stack* ss) {
         if (bestScore > alpha) alpha = bestScore;
     }
 
-    MovePicker mp(pos, *this, ss, ttMove, true, 0);
+    MoveList ml;
+    gen_moves(pos, ml, inCheck ? GEN_ALL : GEN_NOISY);
+    score_moves(*this, pos, ml, ttMove, ss);
     Move bestMove = MOVE_NONE;
     int moveCount = 0;
     Position next;
-    Move m;
-    while ((m = mp.next()) != MOVE_NONE) {
+    for (int i = 0; i < ml.size(); i++) {
+        Move m = pick_next(ml, i);
         if (!inCheck) {
+            // skip losing captures
+            if (ml[i].score < 0 && ml[i].score > -200000000) continue;
             // delta pruning
             int victim = is_ep(m) ? PAWN : (pos.board[move_to(m)] == NO_PIECE ? 6 : piece_type(pos.board[move_to(m)]));
             int gain = victim == 6 ? 0 : SeeValue[victim];
@@ -299,7 +337,7 @@ int Searcher::search(Position& pos, int alpha, int beta, int depth, Stack* ss, b
         eval = ss->staticEval = VALUE_NONE;
     } else {
         rawEval = (ttEval != VALUE_NONE) ? ttEval : Eval::evaluate(pos);
-        #ifdef NO_CORRHIST
+#ifdef NO_CORRHIST
         eval = ss->staticEval = rawEval;
 #else
         eval = ss->staticEval = std::clamp(rawEval + corrHist[pos.stm][corrIdx] / 256, -VALUE_MATE_IN_MAX + 1, VALUE_MATE_IN_MAX - 1);
@@ -337,11 +375,13 @@ int Searcher::search(Position& pos, int alpha, int beta, int depth, Stack* ss, b
     if (!pvNode && !inCheck && !excluded && depth >= 5 && std::abs(beta) < VALUE_MATE_IN_MAX) {
         int probBeta = beta + 180;
         if (!(ttHit && ttDepth >= depth - 3 && ttScore != VALUE_NONE && ttScore < probBeta)) {
-            MovePicker pmp(pos, *this, ss, ttMove, true, probBeta - ss->staticEval);
-            Move pm;
+            MoveList pml;
+            gen_moves(pos, pml, GEN_NOISY);
+            score_moves(*this, pos, pml, ttMove, ss);
             Position pnext;
-            while ((pm = pmp.next()) != MOVE_NONE) {
-                if (!(pos.is_capture(pm) || is_promo(pm))) continue;
+            for (int pi = 0; pi < pml.size(); pi++) {
+                Move pm = pick_next(pml, pi);
+                if (!see_ge(pos, pm, probBeta - ss->staticEval)) continue;
                 pos.make_move(pm, pnext);
                 keyStack[ss->ply + 1] = pnext.key;
                 ss->currentMove = pm;
@@ -361,7 +401,9 @@ int Searcher::search(Position& pos, int alpha, int beta, int depth, Stack* ss, b
     // internal iterative reduction
     if (depth >= 4 && ttMove == MOVE_NONE && !excluded) depth--;
 
-    MovePicker mp(pos, *this, ss, ttMove, false);
+    MoveList ml;
+    gen_moves(pos, ml, GEN_ALL);
+    score_moves(*this, pos, ml, ttMove, ss);
 
     int bestScore = -VALUE_INFINITE;
     Move bestMove = MOVE_NONE;
@@ -373,14 +415,14 @@ int Searcher::search(Position& pos, int alpha, int beta, int depth, Stack* ss, b
     Position next;
     bool skipQuiets = false;
 
-    Move m;
-    while ((m = mp.next()) != MOVE_NONE) {
+    for (int i = 0; i < ml.size(); i++) {
+        Move m = pick_next(ml, i);
         if (m == excluded) continue;
         int from = move_from(m), to = move_to(m);
         int pc = pos.board[from];
         bool isCapture = pos.board[to] != NO_PIECE || is_ep(m);
         bool isNoisy = isCapture || is_promo(m);
-        bool isKillerOrCounter = mp.lastStage >= ST_KILLER1 && mp.lastStage <= ST_COUNTER;
+        bool isKillerOrCounter = ml[i].score >= 898000000 && ml[i].score < 1000000000;
         if (skipQuiets && !isNoisy && !isKillerOrCounter) continue;
         moveCount++;
 
@@ -394,9 +436,9 @@ int Searcher::search(Position& pos, int alpha, int beta, int depth, Stack* ss, b
         if (!rootNode && bestScore > -VALUE_MATE_IN_MAX) {
             if (!isNoisy) {
                 // late move pruning
-                if (!inCheck && depth <= 8 && moveCount >= (3 + depth * depth) / (improving ? 1 : 2)) { skipQuiets = true; mp.skipQuiets = true; }
+                if (!inCheck && depth <= 8 && moveCount >= (3 + depth * depth) / (improving ? 1 : 2)) { skipQuiets = true; }
                 // futility pruning
-                if (!inCheck && depth <= 8 && ss->staticEval + 120 + 100 * depth <= alpha && std::abs(alpha) < VALUE_MATE_IN_MAX) { skipQuiets = true; mp.skipQuiets = true; continue; }
+                if (!inCheck && depth <= 8 && ss->staticEval + 120 + 100 * depth <= alpha && std::abs(alpha) < VALUE_MATE_IN_MAX) { skipQuiets = true; continue; }
                 // history pruning
                 if (depth <= 4 && hist < -3000 * depth) continue;
                 // SEE pruning for quiets
@@ -574,8 +616,10 @@ void Searcher::start() {
             if (stableCount >= 6) factor = 0.6;
             else if (stableCount >= 3) factor = 0.75;
             else if (stableCount >= 1) factor = 0.9;
+#ifndef NO_TIMEEXT
             if (depth >= 6 && score < prevScore - 30) factor = std::max(factor, 1.3);
             if (depth >= 6 && score < prevScore - 80) factor = std::max(factor, 1.6);
+#endif
             if (elapsed() >= softLimit * factor) break;
         }
         prevScore = score;

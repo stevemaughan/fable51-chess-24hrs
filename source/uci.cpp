@@ -52,6 +52,35 @@ static Move parse_move(const Position& pos, const std::string& s) {
     return MOVE_NONE;
 }
 
+static Move parse_san(const Position& pos, std::string san) {
+    while (!san.empty() && (san.back() == '+' || san.back() == '#' || san.back() == '!' || san.back() == '?')) san.pop_back();
+    MoveList ml; gen_moves(pos, ml, GEN_ALL);
+    if (san == "O-O" || san == "O-O-O") {
+        for (int i = 0; i < ml.size(); i++) if (is_castle(ml[i].move) && ((san == "O-O") == (move_to(ml[i].move) > move_from(ml[i].move)))) return ml[i].move;
+        return MOVE_NONE;
+    }
+    int pt = PAWN; size_t i = 0;
+    if (san[0] >= 'A' && san[0] <= 'Z') { pt = std::string("PNBRQK").find(san[0]); i = 1; }
+    int promo = -1; size_t eq = san.find('=');
+    if (eq != std::string::npos) { promo = std::string("PNBRQK").find(san[eq + 1]); san = san.substr(0, eq); }
+    std::string rest = san.substr(i);
+    std::string clean; for (char c : rest) if (c != 'x') clean += c;
+    if (clean.size() < 2) return MOVE_NONE;
+    int to = make_sq(clean[clean.size() - 2] - 'a', clean[clean.size() - 1] - '1');
+    std::string dis = clean.substr(0, clean.size() - 2);
+    for (int k = 0; k < ml.size(); k++) {
+        Move m = ml[k].move;
+        if (move_to(m) != to || is_castle(m)) continue;
+        if (piece_type(pos.board[move_from(m)]) != pt) continue;
+        if (is_promo(m) != (promo >= 0)) continue;
+        if (promo >= 0 && promo_type(m) != promo) continue;
+        bool ok = true;
+        for (char c : dis) { if (c >= 'a' && c <= 'h' && file_of(move_from(m)) != c - 'a') ok = false; if (c >= '1' && c <= '8' && rank_of(move_from(m)) != c - '1') ok = false; }
+        if (ok) return m;
+    }
+    return MOVE_NONE;
+}
+
 static void cmd_position(std::istringstream& ss) {
     std::string tok;
     ss >> tok;
@@ -154,7 +183,7 @@ int main(int argc, char** argv) {
             out("id name Fable 5.1 chess 24hrs");
             out("id author Fable 5.1");
             out("option name Hash type spin default 64 min 1 max 4096");
-            out("option name MoveOverhead type spin default 30 min 0 max 5000");
+            out("option name MoveOverhead type spin default 40 min 0 max 5000");
             out("option name Threads type spin default 1 min 1 max 1");
             out("uciok");
         } else if (cmd == "isready") {
@@ -198,6 +227,16 @@ int main(int argc, char** argv) {
         } else if (cmd == "d") {
             out(searcher.rootPos.fen());
             out("eval " + std::to_string(Eval::evaluate(searcher.rootPos)));
+        } else if (cmd == "san") {
+            std::string tok, ucis; Position pos = searcher.rootPos;
+            while (ss >> tok) {
+                if (tok.find('.') != std::string::npos) { size_t d = tok.rfind('.'); tok = tok.substr(d + 1); if (tok.empty()) continue; }
+                Move m = parse_san(pos, tok);
+                if (m == MOVE_NONE) { out("bad san " + tok); break; }
+                ucis += " " + move_str(m); Position n; pos.make_move(m, n); pos = n;
+            }
+            out("moves" + ucis);
+            out(pos.fen());
         } else if (cmd == "eval") {
             out("eval " + std::to_string(Eval::evaluate(searcher.rootPos)));
         }
