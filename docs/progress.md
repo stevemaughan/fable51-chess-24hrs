@@ -11,3 +11,9 @@ Start: 2026-09-01T16:16:56-04:00. Deadline: 2026-09-02T16:16:56-04:00.
 - Budget: perft-correct by ~H3, first playable in final/ by ~H5, then strength work; last 1.5h reserved for final build/verification.
 - Assumptions: fastchess timemargin unknown -> keep a conservative move overhead. Hash 256 MB set by harness.
 
+## Hour 0 — 2026-09-01 16:31 (elapsed 0:15)
+- Wrote bitboard/PEXT movegen, copy-make position, PeSTO eval, PVS search (TT, QS, killers/history/counter/contHist, NMP, LMR, RFP, razoring, LMP, futility, SEE pruning, singular ext), UCI with search thread.
+- **First full perft suite pass: 16:24:59** (753 tests to depth 6 capped at 400M nodes, 0 fails).
+- fastchess compliance: passed. First build placed in final/ at 16:31.
+- Elo: not yet measurable (first match vs stash-20 running).
+- Next: verify match stability (no timeouts/crashes), then measure vs stash-21/25, then eval improvements.
