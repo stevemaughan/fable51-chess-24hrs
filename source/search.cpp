@@ -11,13 +11,13 @@ TranspositionTable TT;
 int MoveOverhead = 40;
 int SP_LmrBase = 80, SP_LmrDiv = 200, SP_RfpMargin = 75, SP_RfpImproving = 50, SP_RazorMargin = 200, SP_NmpBase = 3, SP_NmpDiv = 3, SP_NmpEvalDiv = 200,
     SP_ProbcutMargin = 180, SP_LmpBase = 3, SP_FutBase = 120, SP_FutMargin = 160, SP_HistPrune = 3000, SP_SeeQuiet = 40, SP_SeeCapt = 100, SP_SingMargin = 2,
-    SP_HistDiv = 6000, SP_AspDelta = 20, SP_RfpDepth = 8, SP_LmpDepth = 8, SP_FutDepth = 8, SP_HistBonusQ = 16, SP_HistBonusL = 80, SP_HistMax = 2000, SP_NodeTm = 1, SP_SingDouble = 20, SP_LmrCaptPct = 50, SP_QsDelta = 200;
+    SP_HistDiv = 6000, SP_AspDelta = 20, SP_RfpDepth = 8, SP_LmpDepth = 8, SP_FutDepth = 8, SP_HistBonusQ = 16, SP_HistBonusL = 80, SP_HistMax = 2000, SP_NodeTm = 1, SP_SingDouble = 20, SP_LmrCaptPct = 50, SP_QsDelta = 200, SP_TmDiv = 24, SP_TmIncPct = 75, SP_TmHardPct = 33, SP_TmHardMul = 4;
 SParam SParams[] = {
     {"LmrBase", &SP_LmrBase}, {"LmrDiv", &SP_LmrDiv}, {"RfpMargin", &SP_RfpMargin}, {"RfpImproving", &SP_RfpImproving}, {"RazorMargin", &SP_RazorMargin},
     {"NmpBase", &SP_NmpBase}, {"NmpDiv", &SP_NmpDiv}, {"NmpEvalDiv", &SP_NmpEvalDiv}, {"ProbcutMargin", &SP_ProbcutMargin}, {"LmpBase", &SP_LmpBase},
     {"FutBase", &SP_FutBase}, {"FutMargin", &SP_FutMargin}, {"HistPrune", &SP_HistPrune}, {"SeeQuiet", &SP_SeeQuiet}, {"SeeCapt", &SP_SeeCapt},
     {"SingMargin", &SP_SingMargin}, {"HistDiv", &SP_HistDiv}, {"AspDelta", &SP_AspDelta}, {"RfpDepth", &SP_RfpDepth}, {"LmpDepth", &SP_LmpDepth},
-    {"FutDepth", &SP_FutDepth}, {"HistBonusQ", &SP_HistBonusQ}, {"HistBonusL", &SP_HistBonusL}, {"HistMax", &SP_HistMax}, {"NodeTm", &SP_NodeTm}, {"SingDouble", &SP_SingDouble}, {"LmrCaptPct", &SP_LmrCaptPct}, {"QsDelta", &SP_QsDelta},
+    {"FutDepth", &SP_FutDepth}, {"HistBonusQ", &SP_HistBonusQ}, {"HistBonusL", &SP_HistBonusL}, {"HistMax", &SP_HistMax}, {"NodeTm", &SP_NodeTm}, {"SingDouble", &SP_SingDouble}, {"LmrCaptPct", &SP_LmrCaptPct}, {"QsDelta", &SP_QsDelta}, {"TmDiv", &SP_TmDiv}, {"TmIncPct", &SP_TmIncPct}, {"TmHardPct", &SP_TmHardPct}, {"TmHardMul", &SP_TmHardMul},
 };
 int SParamCount = sizeof(SParams) / sizeof(SParams[0]);
 static int lmrTableG[64][64];
@@ -158,8 +158,8 @@ void Searcher::set_time_limits() {
             soft = t / (mtg + 2) + myinc * 3 / 4;
             hard = std::min(t * 3 / 4, soft * 4);
         } else {
-            soft = t / 24 + myinc * 3 / 4;
-            hard = std::min(t / 3, soft * 4);
+            soft = t / SP_TmDiv + myinc * SP_TmIncPct / 100;
+            hard = std::min(t * SP_TmHardPct / 100, soft * SP_TmHardMul);
         }
         soft = std::min(soft, t);
         hard = std::max(hard, soft);
