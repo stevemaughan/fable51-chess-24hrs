@@ -37,3 +37,8 @@ Start: 2026-09-01T16:16:56-04:00. Deadline: 2026-09-02T16:16:56-04:00.
 - Tuning: full-param Texel = no gain; subset (241 non-PSQT knobs, lambda 0.5) being tested (engine8 vs engine7b).
 - Added 24 UCI-settable search parameters (sparams.h) + abtest.sh for A/B tests without rebuilds; bench-identical to engine7b.
 - Plan next hour: A/B the main search margins (LMR divisor, RFP, NMP, LMP, futility, aspiration delta) at 5+0.05 with 150-300 games each; keep only clear winners. Datagen round 2 with the stronger engine when cores are free.
+### 18:10 — tuning success
+- engine7b vs stash-21: 35.5% (100 games, 10+0.1) → est ~2600.
+- Subset Texel tuning (241 non-PSQT knobs, lambda 0.5 result/score blend, 1.2M positions): engine8 vs engine7b = 64% (+100 Elo, 150 games at 5+0.05). Adopted (params.h). engine10 = engine9 (UCI params) + tuned eval; verifying vs stash-21 at 10+0.1.
+- Datagen round 2 launched: engine10, 10 procs × 1500 games × 10000 nodes, BelowNormal priority.
+- A/B batch of search params cancelled (was on untuned eval); will redo on engine10.
