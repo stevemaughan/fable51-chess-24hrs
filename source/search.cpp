@@ -1,5 +1,6 @@
 #include "search.h"
 #include "eval.h"
+#include "sparams.h"
 #include <cmath>
 #include <cstdio>
 #include <algorithm>
@@ -8,6 +9,23 @@
 
 TranspositionTable TT;
 int MoveOverhead = 40;
+int SP_LmrBase = 80, SP_LmrDiv = 240, SP_RfpMargin = 75, SP_RfpImproving = 50, SP_RazorMargin = 200, SP_NmpBase = 3, SP_NmpDiv = 3, SP_NmpEvalDiv = 200,
+    SP_ProbcutMargin = 180, SP_LmpBase = 3, SP_FutBase = 120, SP_FutMargin = 100, SP_HistPrune = 3000, SP_SeeQuiet = 40, SP_SeeCapt = 100, SP_SingMargin = 2,
+    SP_HistDiv = 6000, SP_AspDelta = 20, SP_RfpDepth = 8, SP_LmpDepth = 8, SP_FutDepth = 8, SP_HistBonusQ = 16, SP_HistBonusL = 80, SP_HistMax = 2000;
+SParam SParams[] = {
+    {"LmrBase", &SP_LmrBase}, {"LmrDiv", &SP_LmrDiv}, {"RfpMargin", &SP_RfpMargin}, {"RfpImproving", &SP_RfpImproving}, {"RazorMargin", &SP_RazorMargin},
+    {"NmpBase", &SP_NmpBase}, {"NmpDiv", &SP_NmpDiv}, {"NmpEvalDiv", &SP_NmpEvalDiv}, {"ProbcutMargin", &SP_ProbcutMargin}, {"LmpBase", &SP_LmpBase},
+    {"FutBase", &SP_FutBase}, {"FutMargin", &SP_FutMargin}, {"HistPrune", &SP_HistPrune}, {"SeeQuiet", &SP_SeeQuiet}, {"SeeCapt", &SP_SeeCapt},
+    {"SingMargin", &SP_SingMargin}, {"HistDiv", &SP_HistDiv}, {"AspDelta", &SP_AspDelta}, {"RfpDepth", &SP_RfpDepth}, {"LmpDepth", &SP_LmpDepth},
+    {"FutDepth", &SP_FutDepth}, {"HistBonusQ", &SP_HistBonusQ}, {"HistBonusL", &SP_HistBonusL}, {"HistMax", &SP_HistMax},
+};
+int SParamCount = sizeof(SParams) / sizeof(SParams[0]);
+static int lmrTableG[64][64];
+void sparams_changed() {
+    for (int d = 0; d < 64; d++)
+        for (int m = 0; m < 64; m++)
+            lmrTableG[d][m] = (d && m) ? (int)(SP_LmrBase / 100.0 + std::log(d) * std::log(m) / (SP_LmrDiv / 100.0)) : 0;
+}
 extern std::mutex outMutex;
 
 static const int SeeValue[7] = {100, 320, 330, 500, 950, 20000, 0};
@@ -80,9 +98,7 @@ static inline void update_hist(int16_t& h, int bonus) {
 }
 
 Searcher::Searcher() {
-    for (int d = 0; d < 64; d++)
-        for (int m = 0; m < 64; m++)
-            lmrTable[d][m] = (d && m) ? (int)(0.8 + std::log(d) * std::log(m) / 2.4) : 0;
+    sparams_changed();
     clear_history();
 }
 
@@ -349,16 +365,16 @@ int Searcher::search(Position& pos, int alpha, int beta, int depth, Stack* ss, b
 
     if (!pvNode && !inCheck && !excluded) {
         // reverse futility pruning
-        if (depth <= 8 && eval < VALUE_MATE_IN_MAX && eval - 75 * depth + (improving ? 50 : 0) >= beta)
+        if (depth <= SP_RfpDepth && eval < VALUE_MATE_IN_MAX && eval - SP_RfpMargin * depth + (improving ? SP_RfpImproving : 0) >= beta)
             return eval;
         // razoring
-        if (depth <= 3 && eval + 200 * depth <= alpha) {
+        if (depth <= 3 && eval + SP_RazorMargin * depth <= alpha) {
             int v = qsearch(pos, alpha, beta, ss);
             if (v <= alpha) return v;
         }
         // null move pruning
         if (depth >= 3 && eval >= beta && ss->staticEval >= beta - 20 * depth && (ss - 1)->currentMove != MOVE_NONE && pos.has_non_pawn(pos.stm)) {
-            int R = 3 + depth / 3 + std::min((eval - beta) / 200, 3);
+            int R = SP_NmpBase + depth / SP_NmpDiv + std::min((eval - beta) / SP_NmpEvalDiv, 3);
             Position next;
             pos.make_null(next);
             keyStack[ss->ply + 1] = next.key;
@@ -373,7 +389,7 @@ int Searcher::search(Position& pos, int alpha, int beta, int depth, Stack* ss, b
     // probcut
 #ifndef NO_PROBCUT
     if (!pvNode && !inCheck && !excluded && depth >= 5 && std::abs(beta) < VALUE_MATE_IN_MAX) {
-        int probBeta = beta + 180;
+        int probBeta = beta + SP_ProbcutMargin;
         if (!(ttHit && ttDepth >= depth - 3 && ttScore != VALUE_NONE && ttScore < probBeta)) {
             MoveList pml;
             gen_moves(pos, pml, GEN_NOISY);
@@ -436,15 +452,15 @@ int Searcher::search(Position& pos, int alpha, int beta, int depth, Stack* ss, b
         if (!rootNode && bestScore > -VALUE_MATE_IN_MAX) {
             if (!isNoisy) {
                 // late move pruning
-                if (!inCheck && depth <= 8 && moveCount >= (3 + depth * depth) / (improving ? 1 : 2)) { skipQuiets = true; }
+                if (!inCheck && depth <= SP_LmpDepth && moveCount >= (SP_LmpBase + depth * depth) / (improving ? 1 : 2)) { skipQuiets = true; }
                 // futility pruning
-                if (!inCheck && depth <= 8 && ss->staticEval + 120 + 100 * depth <= alpha && std::abs(alpha) < VALUE_MATE_IN_MAX) { skipQuiets = true; continue; }
+                if (!inCheck && depth <= SP_FutDepth && ss->staticEval + SP_FutBase + SP_FutMargin * depth <= alpha && std::abs(alpha) < VALUE_MATE_IN_MAX) { skipQuiets = true; continue; }
                 // history pruning
-                if (depth <= 4 && hist < -3000 * depth) continue;
+                if (depth <= 4 && hist < -SP_HistPrune * depth) continue;
                 // SEE pruning for quiets
-                if (depth <= 8 && !see_ge(pos, m, -40 * depth)) continue;
+                if (depth <= 8 && !see_ge(pos, m, -SP_SeeQuiet * depth)) continue;
             } else {
-                if (depth <= 8 && !see_ge(pos, m, -100 * depth)) continue;
+                if (depth <= 8 && !see_ge(pos, m, -SP_SeeCapt * depth)) continue;
             }
         }
 
@@ -452,7 +468,7 @@ int Searcher::search(Position& pos, int alpha, int beta, int depth, Stack* ss, b
         // singular extension
         if (!rootNode && depth >= 8 && m == ttMove && !excluded && ttBound != BOUND_UPPER && ttDepth >= depth - 3 &&
             std::abs(ttScore) < VALUE_MATE_IN_MAX) {
-            int sBeta = ttScore - 2 * depth;
+            int sBeta = ttScore - SP_SingMargin * depth;
             ss->excluded = m;
             int sScore = search(pos, sBeta - 1, sBeta, (depth - 1) / 2, ss, cutNode);
             ss->excluded = MOVE_NONE;
@@ -476,13 +492,13 @@ int Searcher::search(Position& pos, int alpha, int beta, int depth, Stack* ss, b
         bool doFull = true;
 
         if (depth >= 3 && moveCount > 1 + (rootNode ? 1 : 0) && (!isNoisy || !pvNode)) {
-            int R = lmrTable[std::min(depth, 63)][std::min(moveCount, 63)];
+            int R = lmrTableG[std::min(depth, 63)][std::min(moveCount, 63)];
             if (!isNoisy) {
                 if (!improving) R++;
                 if (cutNode) R++;
                 if (pvNode) R--;
                 if (isKillerOrCounter) R--;
-                R -= std::clamp(hist / 6000, -2, 2);
+                R -= std::clamp(hist / SP_HistDiv, -2, 2);
             } else {
                 R = R / 2;
                 if (cutNode) R++;
@@ -514,7 +530,7 @@ int Searcher::search(Position& pos, int alpha, int beta, int depth, Stack* ss, b
                     ss->pvLen = (ss + 1)->pvLen + 1;
                 }
                 if (score >= beta) {
-                    int bonus = std::min(2000, 16 * depth * depth + 80 * depth);
+                    int bonus = std::min(SP_HistMax, SP_HistBonusQ * depth * depth + SP_HistBonusL * depth);
                     if (!isNoisy) {
                         if (ss->killers[0] != m) { ss->killers[1] = ss->killers[0]; ss->killers[0] = m; }
                         if ((ss - 1)->currentMove != MOVE_NONE && (ss - 1)->movedPiece != NO_PIECE)
@@ -588,7 +604,7 @@ void Searcher::start() {
     int stableCount = 0;
 
     for (int depth = 1; depth <= maxDepth && rootMoves.size() > 1; depth++) {
-        int delta = 20, alpha = -VALUE_INFINITE, beta = VALUE_INFINITE;
+        int delta = SP_AspDelta, alpha = -VALUE_INFINITE, beta = VALUE_INFINITE;
         if (depth >= 5) { alpha = std::max(score - delta, -VALUE_INFINITE); beta = std::min(score + delta, VALUE_INFINITE); }
         rootDepth = depth;
         while (true) {

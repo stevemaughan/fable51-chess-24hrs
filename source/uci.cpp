@@ -1,5 +1,6 @@
 #include "search.h"
 #include "eval.h"
+#include "sparams.h"
 #include <cstdio>
 #include <iostream>
 #include <sstream>
@@ -185,6 +186,7 @@ int main(int argc, char** argv) {
             out("option name Hash type spin default 64 min 1 max 4096");
             out("option name MoveOverhead type spin default 40 min 0 max 5000");
             out("option name Threads type spin default 1 min 1 max 1");
+            for (int i = 0; i < SParamCount; i++) out("option name " + std::string(SParams[i].name) + " type spin default " + std::to_string(*SParams[i].ptr) + " min -100000 max 100000");
             out("uciok");
         } else if (cmd == "isready") {
             out("readyok");
@@ -196,6 +198,7 @@ int main(int argc, char** argv) {
             while (ss >> tok) value += (value.empty() ? "" : " ") + tok;
             if (name == "Hash") { int mb = std::max(1, std::min(4096, atoi(value.c_str()))); TT.resize(mb); }
             else if (name == "MoveOverhead") MoveOverhead = std::max(0, std::min(5000, atoi(value.c_str())));
+            else for (int i = 0; i < SParamCount; i++) if (name == SParams[i].name) { *SParams[i].ptr = atoi(value.c_str()); sparams_changed(); }
         } else if (cmd == "ucinewgame") {
             wait_search();
             TT.clear();

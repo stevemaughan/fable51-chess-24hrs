@@ -32,3 +32,8 @@ Start: 2026-09-01T16:16:56-04:00. Deadline: 2026-09-02T16:16:56-04:00.
 - Staged move picker (movepick.h) build lost ~160 Elo at 5+0.05 vs v3 but was equal at fixed depth 8/12 and only -57 at fixed movetime. Spent ~45 min; could not find the cause (validated pseudo-legality and generator equivalence exhaustively). Reverted to v3 move ordering; movepick.h kept on disk but unused.
 - engine7 = v3 ordering + probcut + correction history + threefold-repetition fix (2-fold of pre-root positions no longer scored as draw) + score-drop time extension: 49.5% vs v3 (100 games, 5+0.05).
 - Texel tuning of all 977 params on 1.2M low-node self-play positions: tuned eval = v3 (49.5%). No gain; data too noisy. Trying non-PSQT subset with lambda 0.5.
+## Hour 3 — 2026-09-01 18:10 (elapsed 1:53)
+- engine7b installed in final/ (commit 19e0874): 59.5% vs stash-20 (100 games, 10+0.1) → est. ~2560-2580 Elo. Compliance passed. stash-21 match running.
+- Tuning: full-param Texel = no gain; subset (241 non-PSQT knobs, lambda 0.5) being tested (engine8 vs engine7b).
+- Added 24 UCI-settable search parameters (sparams.h) + abtest.sh for A/B tests without rebuilds; bench-identical to engine7b.
+- Plan next hour: A/B the main search margins (LMR divisor, RFP, NMP, LMP, futility, aspiration delta) at 5+0.05 with 150-300 games each; keep only clear winners. Datagen round 2 with the stronger engine when cores are free.
