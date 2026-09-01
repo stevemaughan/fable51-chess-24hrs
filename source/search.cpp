@@ -1,5 +1,6 @@
 #include "search.h"
 #include "eval.h"
+#include "movepick.h"
 #include <cmath>
 #include <cstdio>
 #include <algorithm>
@@ -91,6 +92,7 @@ void Searcher::clear_history() {
     memset(captHist, 0, sizeof(captHist));
     memset(contHist, 0, sizeof(contHist));
     memset(counterMove, 0, sizeof(counterMove));
+    memset(corrHist, 0, sizeof(corrHist));
 }
 
 bool Searcher::is_repetition(const Position& pos, int ply) const {
@@ -169,41 +171,6 @@ void Searcher::print_info(int depth, int score, Stack* ss, int bound) {
     fflush(stdout);
 }
 
-// ---------------------------------------------------------------- move ordering
-static void score_moves(const Searcher& S, const Position& pos, MoveList& ml, Move ttMove, Stack* ss) {
-    for (int i = 0; i < ml.size(); i++) {
-        Move m = ml[i].move;
-        int from = move_from(m), to = move_to(m);
-        int pc = pos.board[from];
-        if (m == ttMove) { ml[i].score = 2000000000; continue; }
-        if (pos.board[to] != NO_PIECE || is_ep(m) || is_promo(m)) {
-            int victim = is_ep(m) ? PAWN : (pos.board[to] == NO_PIECE ? 6 : piece_type(pos.board[to]));
-            int vval = victim == 6 ? 0 : SeeValue[victim];
-            if (is_promo(m)) vval += promo_type(m) == QUEEN ? 900 : -200;
-            int sc = vval * 32 - piece_type(pc) + (victim == 6 ? 0 : S.captHist[pc][to][victim]) / 16;
-            if (see_ge(pos, m, -50)) ml[i].score = 1000000000 + sc;
-            else ml[i].score = -100000000 + sc;
-        } else {
-            if (m == ss->killers[0]) { ml[i].score = 900000000; continue; }
-            if (m == ss->killers[1]) { ml[i].score = 899000000; continue; }
-            if ((ss - 1)->currentMove != MOVE_NONE && (ss - 1)->movedPiece != NO_PIECE &&
-                S.counterMove[(ss - 1)->movedPiece][move_to((ss - 1)->currentMove)] == m) { ml[i].score = 898000000; continue; }
-            int h = S.history[pos.stm][from][to];
-            if ((ss - 1)->contHist) h += (*(ss - 1)->contHist)[pc][to];
-            if ((ss - 2)->contHist) h += (*(ss - 2)->contHist)[pc][to];
-            ml[i].score = h;
-        }
-    }
-}
-
-static inline Move pick_next(MoveList& ml, int idx) {
-    int best = idx;
-    for (int i = idx + 1; i < ml.size(); i++)
-        if (ml[i].score > ml[best].score) best = i;
-    std::swap(ml.list[idx], ml.list[best]);
-    return ml[idx].move;
-}
-
 // ---------------------------------------------------------------- quiescence
 int Searcher::qsearch(Position& pos, int alpha, int beta, Stack* ss) {
     nodes++;
@@ -242,17 +209,13 @@ int Searcher::qsearch(Position& pos, int alpha, int beta, Stack* ss) {
         if (bestScore > alpha) alpha = bestScore;
     }
 
-    MoveList ml;
-    gen_moves(pos, ml, inCheck ? GEN_ALL : GEN_NOISY);
-    score_moves(*this, pos, ml, ttMove, ss);
+    MovePicker mp(pos, *this, ss, ttMove, true, 0);
     Move bestMove = MOVE_NONE;
     int moveCount = 0;
     Position next;
-    for (int i = 0; i < ml.size(); i++) {
-        Move m = pick_next(ml, i);
+    Move m;
+    while ((m = mp.next()) != MOVE_NONE) {
         if (!inCheck) {
-            // skip losing captures
-            if (ml[i].score < 0 && ml[i].score > -200000000) continue;
             // delta pruning
             int victim = is_ep(m) ? PAWN : (pos.board[move_to(m)] == NO_PIECE ? 6 : piece_type(pos.board[move_to(m)]));
             int gain = victim == 6 ? 0 : SeeValue[victim];
@@ -330,11 +293,13 @@ int Searcher::search(Position& pos, int alpha, int beta, int depth, Stack* ss, b
             return ttScore;
     }
 
-    int eval;
+    int eval, rawEval = VALUE_NONE;
+    int corrIdx = (int)(pos.pawnKey & 16383);
     if (inCheck) {
         eval = ss->staticEval = VALUE_NONE;
     } else {
-        eval = ss->staticEval = (ttEval != VALUE_NONE) ? ttEval : Eval::evaluate(pos);
+        rawEval = (ttEval != VALUE_NONE) ? ttEval : Eval::evaluate(pos);
+        eval = ss->staticEval = std::clamp(rawEval + corrHist[pos.stm][corrIdx] / 256, -VALUE_MATE_IN_MAX + 1, VALUE_MATE_IN_MAX - 1);
         if (ttHit && ttScore != VALUE_NONE && ((ttBound == BOUND_LOWER && ttScore > eval) || (ttBound == BOUND_UPPER && ttScore < eval)))
             eval = ttScore;
     }
@@ -363,12 +328,34 @@ int Searcher::search(Position& pos, int alpha, int beta, int depth, Stack* ss, b
             if (score >= beta) return score >= VALUE_MATE_IN_MAX ? beta : score;
         }
     }
+    // probcut
+    if (!pvNode && !inCheck && !excluded && depth >= 5 && std::abs(beta) < VALUE_MATE_IN_MAX) {
+        int probBeta = beta + 180;
+        if (!(ttHit && ttDepth >= depth - 3 && ttScore != VALUE_NONE && ttScore < probBeta)) {
+            MovePicker pmp(pos, *this, ss, ttMove, true, probBeta - ss->staticEval);
+            Move pm;
+            Position pnext;
+            while ((pm = pmp.next()) != MOVE_NONE) {
+                if (!(pos.is_capture(pm) || is_promo(pm))) continue;
+                pos.make_move(pm, pnext);
+                keyStack[ss->ply + 1] = pnext.key;
+                ss->currentMove = pm;
+                ss->movedPiece = pos.board[move_from(pm)];
+                ss->contHist = &contHist[ss->movedPiece][move_to(pm)];
+                int v = -qsearch(pnext, -probBeta, -probBeta + 1, ss + 1);
+                if (v >= probBeta) v = -search(pnext, -probBeta, -probBeta + 1, depth - 4, ss + 1, !cutNode);
+                if (stopFlag) return 0;
+                if (v >= probBeta) {
+                    TT.store(tte, pos.key, pm, score_to_tt(v, ss->ply), rawEval, depth - 3, BOUND_LOWER);
+                    return v;
+                }
+            }
+        }
+    }
     // internal iterative reduction
     if (depth >= 4 && ttMove == MOVE_NONE && !excluded) depth--;
 
-    MoveList ml;
-    gen_moves(pos, ml, GEN_ALL);
-    score_moves(*this, pos, ml, ttMove, ss);
+    MovePicker mp(pos, *this, ss, ttMove, false);
 
     int bestScore = -VALUE_INFINITE;
     Move bestMove = MOVE_NONE;
@@ -380,14 +367,14 @@ int Searcher::search(Position& pos, int alpha, int beta, int depth, Stack* ss, b
     Position next;
     bool skipQuiets = false;
 
-    for (int i = 0; i < ml.size(); i++) {
-        Move m = pick_next(ml, i);
+    Move m;
+    while ((m = mp.next()) != MOVE_NONE) {
         if (m == excluded) continue;
         int from = move_from(m), to = move_to(m);
         int pc = pos.board[from];
         bool isCapture = pos.board[to] != NO_PIECE || is_ep(m);
         bool isNoisy = isCapture || is_promo(m);
-        bool isKillerOrCounter = ml[i].score >= 898000000 && ml[i].score < 1000000000;
+        bool isKillerOrCounter = mp.lastStage >= ST_KILLER1 && mp.lastStage <= ST_COUNTER;
         if (skipQuiets && !isNoisy && !isKillerOrCounter) continue;
         moveCount++;
 
@@ -401,9 +388,9 @@ int Searcher::search(Position& pos, int alpha, int beta, int depth, Stack* ss, b
         if (!rootNode && bestScore > -VALUE_MATE_IN_MAX) {
             if (!isNoisy) {
                 // late move pruning
-                if (!inCheck && depth <= 8 && moveCount >= (3 + depth * depth) / (improving ? 1 : 2)) { skipQuiets = true; }
+                if (!inCheck && depth <= 8 && moveCount >= (3 + depth * depth) / (improving ? 1 : 2)) { skipQuiets = true; mp.skipQuiets = true; }
                 // futility pruning
-                if (!inCheck && depth <= 8 && ss->staticEval + 120 + 100 * depth <= alpha && std::abs(alpha) < VALUE_MATE_IN_MAX) { skipQuiets = true; continue; }
+                if (!inCheck && depth <= 8 && ss->staticEval + 120 + 100 * depth <= alpha && std::abs(alpha) < VALUE_MATE_IN_MAX) { skipQuiets = true; mp.skipQuiets = true; continue; }
                 // history pruning
                 if (depth <= 4 && hist < -3000 * depth) continue;
                 // SEE pruning for quiets
@@ -518,7 +505,15 @@ int Searcher::search(Position& pos, int alpha, int beta, int depth, Stack* ss, b
     }
     if (!excluded) {
         int bound = bestScore >= beta ? BOUND_LOWER : (pvNode && bestMove != MOVE_NONE) ? BOUND_EXACT : BOUND_UPPER;
-        TT.store(tte, pos.key, bestMove, score_to_tt(bestScore, ss->ply), ss->staticEval, depth, bound);
+        TT.store(tte, pos.key, bestMove, score_to_tt(bestScore, ss->ply), rawEval, depth, bound);
+        if (!inCheck && std::abs(bestScore) < VALUE_MATE_IN_MAX && (bestMove == MOVE_NONE || !(pos.is_capture(bestMove) || is_promo(bestMove))) &&
+            ((bestScore > ss->staticEval && bound != BOUND_UPPER) || (bestScore < ss->staticEval && bound != BOUND_LOWER))) {
+            int w = std::min(depth + 1, 16);
+            int diff = std::clamp((bestScore - ss->staticEval) * 256, -8192 * 256, 8192 * 256);
+            int32_t& c = corrHist[pos.stm][corrIdx];
+            c = (int32_t)(((int64_t)c * (256 - w) + (int64_t)diff * w) / 256);
+            c = std::clamp(c, -64 * 256, 64 * 256);
+        }
     }
     return bestScore;
 }
@@ -568,14 +563,16 @@ void Searcher::start() {
         print_info(depth, score, ss, BOUND_EXACT);
         if (bestMove == prevBest) stableCount++; else stableCount = 0;
         prevBest = bestMove;
-        prevScore = score;
         if (useTime) {
             double factor = 1.0;
             if (stableCount >= 6) factor = 0.6;
             else if (stableCount >= 3) factor = 0.75;
             else if (stableCount >= 1) factor = 0.9;
+            if (depth >= 6 && score < prevScore - 30) factor = std::max(factor, 1.3);
+            if (depth >= 6 && score < prevScore - 80) factor = std::max(factor, 1.6);
             if (elapsed() >= softLimit * factor) break;
         }
+        prevScore = score;
         if (std::abs(score) >= VALUE_MATE_IN_MAX && depth >= 10 && !limits.infinite && limits.depth == 0) break;
     }
     if (rootMoves.size() == 1 && limits.depth == 0 && !limits.infinite) {

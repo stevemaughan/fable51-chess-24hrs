@@ -48,6 +48,7 @@ public:
     int16_t captHist[12][64][6];
     int16_t contHist[12][64][12][64];
     Move counterMove[12][64];
+    int32_t corrHist[2][16384];
     int lmrTable[64][64];
 
     Stack stackBuf[MAX_PLY + 10];

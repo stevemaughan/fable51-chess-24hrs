@@ -320,6 +320,7 @@ bool Position::is_pseudo_legal(Move m) const {
         }
         return false;
     }
+    if (flags == 3) return false;
     if (pt == PAWN) {
         int push = us == WHITE ? 8 : -8;
         int promoRank = us == WHITE ? 7 : 0;
