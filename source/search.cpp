@@ -299,7 +299,11 @@ int Searcher::search(Position& pos, int alpha, int beta, int depth, Stack* ss, b
         eval = ss->staticEval = VALUE_NONE;
     } else {
         rawEval = (ttEval != VALUE_NONE) ? ttEval : Eval::evaluate(pos);
+        #ifdef NO_CORRHIST
+        eval = ss->staticEval = rawEval;
+#else
         eval = ss->staticEval = std::clamp(rawEval + corrHist[pos.stm][corrIdx] / 256, -VALUE_MATE_IN_MAX + 1, VALUE_MATE_IN_MAX - 1);
+#endif
         if (ttHit && ttScore != VALUE_NONE && ((ttBound == BOUND_LOWER && ttScore > eval) || (ttBound == BOUND_UPPER && ttScore < eval)))
             eval = ttScore;
     }
@@ -329,6 +333,7 @@ int Searcher::search(Position& pos, int alpha, int beta, int depth, Stack* ss, b
         }
     }
     // probcut
+#ifndef NO_PROBCUT
     if (!pvNode && !inCheck && !excluded && depth >= 5 && std::abs(beta) < VALUE_MATE_IN_MAX) {
         int probBeta = beta + 180;
         if (!(ttHit && ttDepth >= depth - 3 && ttScore != VALUE_NONE && ttScore < probBeta)) {
@@ -352,6 +357,7 @@ int Searcher::search(Position& pos, int alpha, int beta, int depth, Stack* ss, b
             }
         }
     }
+#endif
     // internal iterative reduction
     if (depth >= 4 && ttMove == MOVE_NONE && !excluded) depth--;
 

@@ -13,7 +13,8 @@
 
 using namespace Eval;
 
-struct Entry { Position pos; float result; };
+struct Entry { Position pos; float result; float score; };
+static double LAMBDA = 1.0;
 static std::vector<Entry> data;
 static double K = 1.0;
 static int NTHREADS = 10;
@@ -40,7 +41,8 @@ static void error_range(size_t a, size_t b, double* out) {
         recompute(p);
         int v = evaluate(p);
         if (p.stm == BLACK) v = -v;
-        double d = data[i].result - sigmoid(v);
+        double target = LAMBDA * data[i].result + (1.0 - LAMBDA) * sigmoid((int)data[i].score);
+        double d = target - sigmoid(v);
         e += d * d;
     }
     *out = e;
@@ -143,6 +145,7 @@ int main(int argc, char** argv) {
     int iters = atoi(argv[3]);
     NTHREADS = atoi(argv[4]);
     const char* outfile = argv[5];
+    if (argc > 6) LAMBDA = atof(argv[6]);
 
     std::ifstream in(argv[1]);
     std::string line;
@@ -154,6 +157,7 @@ int main(int argc, char** argv) {
         if (p2 == std::string::npos) continue;
         Entry e;
         e.pos.set_fen(line.substr(0, p1));
+        e.score = (float)atof(line.c_str() + p1 + 1);
         e.result = (float)atof(line.c_str() + p2 + 1);
         data.push_back(e);
     }

@@ -23,3 +23,8 @@ Start: 2026-09-01T16:16:56-04:00. Deadline: 2026-09-02T16:16:56-04:00.
 - Wrote self-play datagen (engine.exe datagen) and Texel coordinate-descent tuner (source/tune.cpp) over params.h; both smoke-tested.
 - Search reviewed for bugs; none found. Check extension bounded to ply < 2*rootDepth.
 - Next: install eval3 in final/, commit; run datagen (10 procs, ~20 min), tune eval; then search tuning.
+## Hour 2 — 2026-09-01 17:15 (elapsed 1:00)
+- eval3 (king-danger fix) vs stash-20: 44% over 100 games at 10+0.1 → est. ~2470 Elo. Installed in final/ (commit "v3").
+- Datagen done: 20k self-play games at 6000 nodes/move → 1.97M labelled positions. Tuner running (1.2M positions, 6 threads, coordinate descent).
+- Added staged move picker, probcut, correction history, score-drop time extension. Combined build lost 25% vs eval3 (40 games) → bisecting with 4 variant builds (80 games each vs eval3).
+- Next hour: identify the regression, adopt tuned eval if it wins a match, then re-measure vs stash-20/21.
