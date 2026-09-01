@@ -11,13 +11,13 @@ TranspositionTable TT;
 int MoveOverhead = 40;
 int SP_LmrBase = 80, SP_LmrDiv = 240, SP_RfpMargin = 75, SP_RfpImproving = 50, SP_RazorMargin = 200, SP_NmpBase = 3, SP_NmpDiv = 3, SP_NmpEvalDiv = 200,
     SP_ProbcutMargin = 180, SP_LmpBase = 3, SP_FutBase = 120, SP_FutMargin = 100, SP_HistPrune = 3000, SP_SeeQuiet = 40, SP_SeeCapt = 100, SP_SingMargin = 2,
-    SP_HistDiv = 6000, SP_AspDelta = 20, SP_RfpDepth = 8, SP_LmpDepth = 8, SP_FutDepth = 8, SP_HistBonusQ = 16, SP_HistBonusL = 80, SP_HistMax = 2000;
+    SP_HistDiv = 6000, SP_AspDelta = 20, SP_RfpDepth = 8, SP_LmpDepth = 8, SP_FutDepth = 8, SP_HistBonusQ = 16, SP_HistBonusL = 80, SP_HistMax = 2000, SP_NodeTm = 1;
 SParam SParams[] = {
     {"LmrBase", &SP_LmrBase}, {"LmrDiv", &SP_LmrDiv}, {"RfpMargin", &SP_RfpMargin}, {"RfpImproving", &SP_RfpImproving}, {"RazorMargin", &SP_RazorMargin},
     {"NmpBase", &SP_NmpBase}, {"NmpDiv", &SP_NmpDiv}, {"NmpEvalDiv", &SP_NmpEvalDiv}, {"ProbcutMargin", &SP_ProbcutMargin}, {"LmpBase", &SP_LmpBase},
     {"FutBase", &SP_FutBase}, {"FutMargin", &SP_FutMargin}, {"HistPrune", &SP_HistPrune}, {"SeeQuiet", &SP_SeeQuiet}, {"SeeCapt", &SP_SeeCapt},
     {"SingMargin", &SP_SingMargin}, {"HistDiv", &SP_HistDiv}, {"AspDelta", &SP_AspDelta}, {"RfpDepth", &SP_RfpDepth}, {"LmpDepth", &SP_LmpDepth},
-    {"FutDepth", &SP_FutDepth}, {"HistBonusQ", &SP_HistBonusQ}, {"HistBonusL", &SP_HistBonusL}, {"HistMax", &SP_HistMax},
+    {"FutDepth", &SP_FutDepth}, {"HistBonusQ", &SP_HistBonusQ}, {"HistBonusL", &SP_HistBonusL}, {"HistMax", &SP_HistMax}, {"NodeTm", &SP_NodeTm},
 };
 int SParamCount = sizeof(SParams) / sizeof(SParams[0]);
 static int lmrTableG[64][64];
@@ -490,6 +490,7 @@ int Searcher::search(Position& pos, int alpha, int beta, int depth, Stack* ss, b
         int newDepth = depth - 1 + extension;
         int score;
         bool doFull = true;
+        U64 nodesBefore = nodes;
 
         if (depth >= 3 && moveCount > 1 + (rootNode ? 1 : 0) && (!isNoisy || !pvNode)) {
             int R = lmrTableG[std::min(depth, 63)][std::min(moveCount, 63)];
@@ -518,6 +519,7 @@ int Searcher::search(Position& pos, int alpha, int beta, int depth, Stack* ss, b
             score = -search(next, -beta, -alpha, newDepth, ss + 1, false);
         }
         if (stopFlag) return 0;
+        if (rootNode) rootMoveNodes[m & 4095] += nodes - nodesBefore;
 
         if (score > bestScore) {
             bestScore = score;
@@ -594,6 +596,7 @@ void Searcher::start() {
     memset(stackBuf, 0, sizeof(stackBuf));
     for (int i = 0; i < MAX_PLY + 10; i++) { stackBuf[i].ply = i - 4; stackBuf[i].staticEval = VALUE_NONE; }
     keyStack[0] = rootPos.key;
+    memset(rootMoveNodes, 0, sizeof(rootMoveNodes));
 
     MoveList rootMoves;
     gen_moves(rootPos, rootMoves, GEN_ALL);
@@ -636,6 +639,10 @@ void Searcher::start() {
             if (depth >= 6 && score < prevScore - 30) factor = std::max(factor, 1.3);
             if (depth >= 6 && score < prevScore - 80) factor = std::max(factor, 1.6);
 #endif
+            if (SP_NodeTm && depth >= 8 && nodes > 0) {
+                double frac = (double)rootMoveNodes[bestMove & 4095] / (double)nodes;
+                factor *= std::clamp(1.55 - frac, 0.55, 1.35);
+            }
             if (elapsed() >= softLimit * factor) break;
         }
         prevScore = score;

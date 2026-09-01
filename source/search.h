@@ -49,6 +49,7 @@ public:
     int16_t contHist[12][64][12][64];
     Move counterMove[12][64];
     int32_t corrHist[2][16384];
+    U64 rootMoveNodes[4096];
     int lmrTable[64][64];
 
     Stack stackBuf[MAX_PLY + 10];
