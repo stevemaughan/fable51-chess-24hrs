@@ -186,7 +186,9 @@ int main(int argc, char** argv) {
             out("option name Hash type spin default 64 min 1 max 4096");
             out("option name MoveOverhead type spin default 40 min 0 max 5000");
             out("option name Threads type spin default 1 min 1 max 1");
+#ifndef NO_TUNE_OPTIONS
             for (int i = 0; i < SParamCount; i++) out("option name " + std::string(SParams[i].name) + " type spin default " + std::to_string(*SParams[i].ptr) + " min -100000 max 100000");
+#endif
             out("uciok");
         } else if (cmd == "isready") {
             out("readyok");
