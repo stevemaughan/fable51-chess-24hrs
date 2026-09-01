@@ -47,3 +47,8 @@ Start: 2026-09-01T16:16:56-04:00. Deadline: 2026-09-02T16:16:56-04:00.
 - New eval terms (bishop pawns, rook behind passer, pawn storm, pawn-count imbalance, space, blocked passer): +16 ±48 vs engine10 (150 games) — kept, to be tuned.
 - Node-based time management: +72 ±44 (200 games, 5+0.05). Singular double extension: +31 ±40 (200 games). Both kept.
 - engine13f (all of the above, options hidden) being verified vs stash-25 at 10+0.1; datagen round 2 ~90% done; tune round 2 queued automatically.
+## Hour 4 — 2026-09-01 19:05 (elapsed 2:48)
+- final/ = engine13f (commit 56bedab): 42.5% vs stash-25 (100 games, 10+0.1) → est. ~2880 Elo.
+- Tuning round 2 (subset, fresh 1.4M positions at 10k nodes): neutral (49%) — not adopted. Full-PSQT tuning with lambda 0.5 running in background (997 knobs, ~1 h).
+- A/B on engine13 at 5+0.05 (150 games each): AspDelta 40: -37 (reject). LmrDiv 200: +44 (candidate). Remaining: LmrDiv 300, RfpMargin 100, NmpBase 4, FutMargin 160, LmpBase 5, HistDiv 4000.
+- Next hour: finish A/B batch, adopt winners, verify combined build vs stash-25/30; PGO build test.
