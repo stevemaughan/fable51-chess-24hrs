@@ -111,14 +111,17 @@ static Score eval_pieces(const Position& pos, EvalInfo& ei) {
             int mob = popcount(att & ei.mobilityArea[Us]);
             if (pt == KNIGHT) {
                 score += MobilityKnight[mob];
+                score += KnightPawnCount * (popcount(ourPawns) - 5);
                 if ((bit(s) & outpostRanks) && (bit(s) & pawnAttacks) && !(BB::PassedMask[Us][s] & ~file_bb(file_of(s)) & theirPawns)) score += KnightOutpost;
                 if (bit(s) & behindPawn) score += MinorBehindPawn;
             } else if (pt == BISHOP) {
                 score += MobilityBishop[mob];
+                score += BishopPawns * popcount(ourPawns & ((bit(s) & 0x55AA55AA55AA55AAULL) ? 0x55AA55AA55AA55AAULL : ~0x55AA55AA55AA55AAULL));
                 if ((bit(s) & outpostRanks) && (bit(s) & pawnAttacks) && !(BB::PassedMask[Us][s] & ~file_bb(file_of(s)) & theirPawns)) score += BishopOutpost;
                 if (bit(s) & behindPawn) score += MinorBehindPawn;
             } else if (pt == ROOK) {
                 score += MobilityRook[mob];
+                score += RookPawnCount * (popcount(ourPawns) - 5);
                 U64 fileBB = file_bb(file_of(s));
                 if (!(fileBB & ourPawns)) score += (fileBB & theirPawns) ? RookSemiOpenFile : RookOpenFile;
                 if (relative_rank(Us, s) == 6 && relative_rank(Us, theirKsq) == 7) score += RookOnSeventh;
@@ -142,6 +145,15 @@ static Score eval_king(const Position& pos, EvalInfo& ei) {
     // pawn shield
     int kf = file_of(ksq);
     int kr = rank_of(ksq);
+    // pawn storm: enemy pawns advancing on files near the king
+    {
+        U64 storm = theirPawns & (file_bb(kf) | BB::AdjacentFiles[kf]) & BB::ForwardRanks[Us][kr];
+        while (storm) {
+            int ps = pop_lsb(storm);
+            int d = std::abs(rank_of(ps) - kr);
+            if (d <= 3) score += PawnStorm[d];
+        }
+    }
     for (int f = std::max(0, kf - 1); f <= std::min(7, kf + 1); f++) {
         U64 fileBB = file_bb(f);
         U64 shield = fileBB & ourPawns & BB::ForwardRanks[Us][kr];
@@ -223,7 +235,10 @@ static Score eval_passed(const Position& pos, EvalInfo& ei) {
                 if (defended) bonus += S(2 * w, 4 * w);
             } else if (pos.pieces(Them) & bit(front)) {
                 bonus -= S(2 * w, 4 * w);
+                bonus += PassedBlocked;
             }
+            U64 behind = BB::ForwardRanks[Them][rank_of(s)] & file_bb(file_of(s));
+            if (behind & pos.pieces(Us, ROOK, QUEEN) && !(BB::Between[s][Us == WHITE ? lsb(behind & pos.pieces(Us, ROOK, QUEEN)) : msb(behind & pos.pieces(Us, ROOK, QUEEN))] & pos.pieces())) bonus += RookBehindPasser;
         }
         score += bonus;
     }
@@ -267,6 +282,20 @@ int evaluate(const Position& pos) {
     score += eval_king<WHITE>(pos, ei) - eval_king<BLACK>(pos, ei);
     score += eval_threats<WHITE>(pos, ei) - eval_threats<BLACK>(pos, ei);
     score += eval_passed<WHITE>(pos, ei) - eval_passed<BLACK>(pos, ei);
+    // space: safe squares in the centre files behind our pawns, middlegame only
+    {
+        const U64 centerFiles = file_bb(2) | file_bb(3) | file_bb(4) | file_bb(5);
+        for (int c = 0; c < 2; c++) {
+            U64 area = centerFiles & (c == WHITE ? (rank_bb(1) | rank_bb(2) | rank_bb(3)) : (rank_bb(6) | rank_bb(5) | rank_bb(4)));
+            U64 safe = area & ~pos.pieces(c, PAWN) & ~ei.attackedBy[c ^ 1][PAWN];
+            U64 behind = pos.pieces(c, PAWN);
+            behind |= c == WHITE ? (behind >> 8) | (behind >> 16) : (behind << 8) | (behind << 16);
+            int cnt = popcount(safe & behind & ~ei.attackedBy[c ^ 1][6]) + popcount(safe);
+            int pieces = popcount(pos.pieces(c)) - popcount(pos.pieces(c, PAWN)) - 1;
+            Score sp = Space * (cnt * pieces / 8);
+            score += c == WHITE ? sp : -sp;
+        }
+    }
     score += pos.stm == WHITE ? Tempo : -Tempo;
 
     int mg = pos.mg + mg_of(score);

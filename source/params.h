@@ -153,6 +153,13 @@ Score KingSemiOpenFile = S(-4,8);
 int KingAttackWeight[6] = {0, 18, 16, 18, 22, 0};
 int SafeCheckWeight[6] = {0, 58, 46, 68, 78, 0};
 int KingDanger[5] = {352, 32, 28, 148, 20};
+Score BishopPawns = S(-4,-6);
+Score RookBehindPasser = S(4,20);
+Score PawnStorm[4] = {S(0,0), S(-24,0), S(-12,0), S(-4,0)};
+Score KnightPawnCount = S(3,3);
+Score RookPawnCount = S(-2,-2);
+Score Space = S(3,0);
+Score PassedBlocked = S(-6,-12);
 
 int* mg_tables[6] = {mg_pawn_table, mg_knight_table, mg_bishop_table, mg_rook_table, mg_queen_table, mg_king_table};
 int* eg_tables[6] = {eg_pawn_table, eg_knight_table, eg_bishop_table, eg_rook_table, eg_queen_table, eg_king_table};
@@ -174,5 +181,6 @@ std::vector<TuneEntry> tune_entries() {
         TE_S1(ThreatByPawn), TE_S1(ThreatMinorOnMajor), TE_S1(ThreatRookOnQueen), TE_S1(ThreatHanging),
         TE_S1(ThreatByKing), TE_S1(PawnPushThreat), TE_S1(Tempo), TE_S(KingShield), TE_S1(KingOpenFile),
         TE_S1(KingSemiOpenFile), TE_I(KingAttackWeight), TE_I(SafeCheckWeight), TE_I(KingDanger),
+        TE_S1(BishopPawns), TE_S1(RookBehindPasser), TE_S(PawnStorm), TE_S1(KnightPawnCount), TE_S1(RookPawnCount), TE_S1(Space), TE_S1(PassedBlocked),
     };
 }

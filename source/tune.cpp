@@ -131,6 +131,7 @@ std::vector<TuneEntry> tune_entries() {
         TE_S1(ThreatByPawn), TE_S1(ThreatMinorOnMajor), TE_S1(ThreatRookOnQueen), TE_S1(ThreatHanging),
         TE_S1(ThreatByKing), TE_S1(PawnPushThreat), TE_S1(Tempo), TE_S(KingShield), TE_S1(KingOpenFile),
         TE_S1(KingSemiOpenFile), TE_I(KingAttackWeight), TE_I(SafeCheckWeight), TE_I(KingDanger),
+        TE_S1(BishopPawns), TE_S1(RookBehindPasser), TE_S(PawnStorm), TE_S1(KnightPawnCount), TE_S1(RookPawnCount), TE_S1(Space), TE_S1(PassedBlocked),
     };
 }
 )");
