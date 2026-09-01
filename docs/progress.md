@@ -17,3 +17,9 @@ Start: 2026-09-01T16:16:56-04:00. Deadline: 2026-09-02T16:16:56-04:00.
 - fastchess compliance: passed. First build placed in final/ at 16:31.
 - Elo: not yet measurable (first match vs stash-20 running).
 - Next: verify match stability (no timeouts/crashes), then measure vs stash-21/25, then eval improvements.
+## Hour 1 — 2026-09-01 17:00 (elapsed 0:45)
+- v1 (PeSTO only) vs stash-20 at 10+0.1: 15.8% (60 games) → ~2200. No time losses/crashes.
+- Wrote full HCE (pawn hash, mobility, king safety, threats, passed pawns). First version scored 20% (100 games): found king-danger formula bug (danger²/48 → thousands of cp). Fixed (danger²/400): running ~47% vs stash-20 mid-match.
+- Wrote self-play datagen (engine.exe datagen) and Texel coordinate-descent tuner (source/tune.cpp) over params.h; both smoke-tested.
+- Search reviewed for bugs; none found. Check extension bounded to ply < 2*rootDepth.
+- Next: install eval3 in final/, commit; run datagen (10 procs, ~20 min), tune eval; then search tuning.

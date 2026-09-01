@@ -8,6 +8,7 @@
 #include <chrono>
 
 std::mutex outMutex;
+void datagen(int games, int nodes, U64 seed, const char* outfile);
 static Searcher searcher;
 static std::thread searchThread;
 static bool searching = false;
@@ -135,6 +136,10 @@ int main(int argc, char** argv) {
     searcher.rootPos.set_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
     setvbuf(stdout, nullptr, _IONBF, 0);
 
+    if (argc > 5 && std::string(argv[1]) == "datagen") {
+        datagen(atoi(argv[2]), atoi(argv[3]), strtoull(argv[4], 0, 10), argv[5]);
+        return 0;
+    }
     if (argc > 1 && std::string(argv[1]) == "bench") {
         bench(argc > 2 ? atoi(argv[2]) : 12);
         return 0;

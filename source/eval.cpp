@@ -1,154 +1,302 @@
 #include "eval.h"
+#include <algorithm>
 
 int PSQ_MG[12][64];
 int PSQ_EG[12][64];
 const int PhaseInc[6] = {0, 1, 1, 2, 4, 0};
 
+
 namespace Eval {
 int PieceValue[6] = {100, 320, 330, 500, 950, 0};
+bool UsePawnHash = true;
 
-// PeSTO tables (chessprogramming.org), rank 8 first (index 0 = a8)
-static const int mg_value[6] = {82, 337, 365, 477, 1025, 0};
-static const int eg_value[6] = {94, 281, 297, 512, 936, 0};
+// ---------------------------------------------------------------- PeSTO tables (chessprogramming.org), rank 8 first
+#include "params.h"
 
-static const int mg_pawn_table[64] = {
-      0,   0,   0,   0,   0,   0,  0,   0,
-     98, 134,  61,  95,  68, 126, 34, -11,
-     -6,   7,  26,  31,  65,  56, 25, -20,
-    -14,  13,   6,  21,  23,  12, 17, -23,
-    -27,  -2,  -5,  12,  17,   6, 10, -25,
-    -26,  -4,  -4, -10,   3,   3, 33, -12,
-    -35,  -1, -20, -23, -15,  24, 38, -22,
-      0,   0,   0,   0,   0,   0,  0,   0,
+// pawn hash
+struct PawnEntry {
+    U64 key;
+    Score score;         // white perspective, pawn-only terms
+    U64 passed[2];
+    U64 pawnAttacks[2];
 };
-static const int eg_pawn_table[64] = {
-      0,   0,   0,   0,   0,   0,   0,   0,
-    178, 173, 158, 134, 147, 132, 165, 187,
-     94, 100,  85,  67,  56,  53,  82,  84,
-     32,  24,  13,   5,  -2,   4,  17,  17,
-     13,   9,  -3,  -7,  -7,  -8,   3,  -1,
-      4,   7,  -6,   1,   0,  -5,  -1,  -8,
-     13,   8,   8,  10,  13,   0,   2,  -7,
-      0,   0,   0,   0,   0,   0,   0,   0,
-};
-static const int mg_knight_table[64] = {
-   -167, -89, -34, -49,  61, -97, -15, -107,
-    -73, -41,  72,  36,  23,  62,   7,  -17,
-    -47,  60,  37,  65,  84, 129,  73,   44,
-     -9,  17,  19,  53,  37,  69,  18,   22,
-    -13,   4,  16,  13,  28,  19,  21,   -8,
-    -23,  -9,  12,  10,  19,  17,  25,  -16,
-    -29, -53, -12,  -3,  -1,  18, -14,  -19,
-   -105, -21, -58, -33, -17, -28, -19,  -23,
-};
-static const int eg_knight_table[64] = {
-    -58, -38, -13, -28, -31, -27, -63, -99,
-    -25,  -8, -25,  -2,  -9, -25, -24, -52,
-    -24, -20,  10,   9,  -1,  -9, -19, -41,
-    -17,   3,  22,  22,  22,  11,   8, -18,
-    -18,  -6,  16,  25,  16,  17,   4, -18,
-    -23,  -3,  -1,  15,  10,  -3, -20, -22,
-    -42, -20, -10,  -5,  -2, -20, -23, -44,
-    -29, -51, -23, -15, -22, -18, -50, -64,
-};
-static const int mg_bishop_table[64] = {
-    -29,   4, -82, -37, -25, -42,   7,  -8,
-    -26,  16, -18, -13,  30,  59,  18, -47,
-    -16,  37,  43,  40,  35,  50,  37,  -2,
-     -4,   5,  19,  50,  37,  37,   7,  -2,
-     -6,  13,  13,  26,  34,  12,  10,   4,
-      0,  15,  15,  15,  14,  27,  18,  10,
-      4,  15,  16,   0,   7,  21,  33,   1,
-    -33,  -3, -14, -21, -13, -12, -39, -21,
-};
-static const int eg_bishop_table[64] = {
-    -14, -21, -11,  -8, -7,  -9, -17, -24,
-     -8,  -4,   7, -12, -3, -13,  -4, -14,
-      2,  -8,   0,  -1, -2,   6,   0,   4,
-     -3,   9,  12,   9, 14,  10,   3,   2,
-     -6,   3,  13,  19,  7,  10,  -3,  -9,
-    -12,  -3,   8,  10, 13,   3,  -7, -15,
-    -14, -18,  -7,  -1,  4,  -9, -15, -27,
-    -23,  -9, -23,  -5, -9, -16,  -5, -17,
-};
-static const int mg_rook_table[64] = {
-     32,  42,  32,  51, 63,  9,  31,  43,
-     27,  32,  58,  62, 80, 67,  26,  44,
-     -5,  19,  26,  36, 17, 45,  61,  16,
-    -24, -11,   7,  26, 24, 35,  -8, -20,
-    -36, -26, -12,  -1,  9, -7,   6, -23,
-    -45, -25, -16, -17,  3,  0,  -5, -33,
-    -44, -16, -20,  -9, -1, 11,  -6, -71,
-    -19, -13,   1,  17, 16,  7, -37, -26,
-};
-static const int eg_rook_table[64] = {
-    13, 10, 18, 15, 12,  12,   8,   5,
-    11, 13, 13, 11, -3,   3,   8,   3,
-     7,  7,  7,  5,  4,  -3,  -5,  -3,
-     4,  3, 13,  1,  2,   1,  -1,   2,
-     3,  5,  8,  4, -5,  -6,  -8, -11,
-    -4,  0, -5, -1, -7, -12,  -8, -16,
-    -6, -6,  0,  2, -9,  -9, -11,  -3,
-    -9,  2,  3, -1, -5, -13,   4, -20,
-};
-static const int mg_queen_table[64] = {
-    -28,   0,  29,  12,  59,  44,  43,  45,
-    -24, -39,  -5,   1, -16,  57,  28,  54,
-    -13, -17,   7,   8,  29,  56,  47,  57,
-    -27, -27, -16, -16,  -1,  17,  -2,   1,
-     -9, -26,  -9, -10,  -2,  -4,   3,  -3,
-    -14,   2, -11,  -2,  -5,   2,  14,   5,
-    -35,  -8,  11,   2,   8,  15,  -3,   1,
-     -1, -18,  -9,  10, -15, -25, -31, -50,
-};
-static const int eg_queen_table[64] = {
-     -9,  22,  22,  27,  27,  19,  10,  20,
-    -17,  20,  32,  41,  58,  25,  30,   0,
-    -20,   6,   9,  49,  47,  35,  19,   9,
-      3,  22,  24,  45,  57,  40,  57,  36,
-    -18,  28,  19,  47,  31,  34,  39,  23,
-    -16, -27,  15,   6,   9,  17,  10,   5,
-    -22, -23, -30, -16, -16, -23, -36, -32,
-    -33, -28, -22, -43,  -5, -32, -20, -41,
-};
-static const int mg_king_table[64] = {
-    -65,  23,  16, -15, -56, -34,   2,  13,
-     29,  -1, -20,  -7,  -8,  -4, -38, -29,
-     -9,  24,   2, -16, -20,   6,  22, -22,
-    -17, -20, -12, -27, -30, -25, -14, -36,
-    -49,  -1, -27, -39, -46, -44, -33, -51,
-    -14, -14, -22, -46, -44, -30, -15, -27,
-      1,   7,  -8, -64, -43, -16,   9,   8,
-    -15,  36,  12, -54,   8, -28,  24,  14,
-};
-static const int eg_king_table[64] = {
-    -74, -35, -18, -18, -11,  15,   4, -17,
-    -12,  17,  14,  17,  17,  38,  23,  11,
-     10,  17,  23,  15,  20,  45,  44,  13,
-     -8,  22,  24,  27,  26,  33,  26,   3,
-    -18,  -4,  21,  24,  27,  23,   9, -11,
-    -19,  -3,  11,  21,  23,  16,   7,  -9,
-    -27, -11,   4,  13,  14,   4,  -5, -17,
-    -53, -34, -21, -11, -28, -14, -24, -43,
-};
-
-static const int* mg_tables[6] = {mg_pawn_table, mg_knight_table, mg_bishop_table, mg_rook_table, mg_queen_table, mg_king_table};
-static const int* eg_tables[6] = {eg_pawn_table, eg_knight_table, eg_bishop_table, eg_rook_table, eg_queen_table, eg_king_table};
+static const size_t PAWN_HASH_SIZE = 1 << 15;
+static PawnEntry pawnTable[PAWN_HASH_SIZE];
 
 void init() {
     for (int pt = 0; pt < 6; pt++)
         for (int s = 0; s < 64; s++) {
-            // table index 0 = a8 → for white piece on square s use flipped square
             PSQ_MG[make_piece(WHITE, pt)][s] = mg_value[pt] + mg_tables[pt][flip_sq(s)];
             PSQ_EG[make_piece(WHITE, pt)][s] = eg_value[pt] + eg_tables[pt][flip_sq(s)];
             PSQ_MG[make_piece(BLACK, pt)][s] = mg_value[pt] + mg_tables[pt][s];
             PSQ_EG[make_piece(BLACK, pt)][s] = eg_value[pt] + eg_tables[pt][s];
         }
+    memset(pawnTable, 0, sizeof(pawnTable));
+}
+
+struct EvalInfo {
+    U64 attackedBy[2][7];   // by piece type; [6] = all
+    U64 attackedBy2[2];
+    U64 kingZone[2];
+    U64 mobilityArea[2];
+    int kingAttackersCount[2];
+    int kingAttackWeight[2];
+    U64 passed[2];
+};
+
+template <int Us>
+static Score eval_pawns(const Position& pos, PawnEntry& pe) {
+    constexpr int Them = Us ^ 1;
+    constexpr int Up = Us == WHITE ? 8 : -8;
+    U64 ourPawns = pos.pieces(Us, PAWN);
+    U64 theirPawns = pos.pieces(Them, PAWN);
+    Score score = 0;
+    U64 b = ourPawns;
+    pe.passed[Us] = 0;
+    U64 theirAttacks = BB::pawn_attacks_bb(Them, theirPawns);
+    U64 ourAttacks = BB::pawn_attacks_bb(Us, ourPawns);
+    pe.pawnAttacks[Us] = ourAttacks;
+    while (b) {
+        int s = pop_lsb(b);
+        int f = file_of(s), r = relative_rank(Us, s);
+        U64 adjacent = BB::AdjacentFiles[f] & ourPawns;
+        U64 phalanx = adjacent & rank_bb(rank_of(s));
+        U64 supported = adjacent & rank_bb(rank_of(s - Up));
+        bool opposed = theirPawns & BB::ForwardRanks[Us][rank_of(s)] & file_bb(f);
+        bool doubled = ourPawns & bit(s - Up);
+        if (!adjacent) score += PawnIsolated;
+        else if (phalanx) score += PawnPhalanx[r];
+        else if (supported) score += PawnConnected[r];
+        if (doubled) score += PawnDoubled;
+        // backward: no own pawns behind on adjacent files, and the stop square is attacked by enemy pawn
+        if (!(adjacent & ~BB::ForwardRanks[Us][rank_of(s)]) && (theirAttacks & bit(s + Up)) && !opposed) score += PawnBackward;
+        // passed
+        if (!(BB::PassedMask[Us][s] & theirPawns)) pe.passed[Us] |= bit(s);
+    }
+    return score;
+}
+
+template <int Us>
+static Score eval_pieces(const Position& pos, EvalInfo& ei) {
+    constexpr int Them = Us ^ 1;
+    Score score = 0;
+    U64 occ = pos.pieces();
+    int ksq = pos.king_sq(Us);
+    int theirKsq = pos.king_sq(Them);
+    U64 outpostRanks = Us == WHITE ? (rank_bb(3) | rank_bb(4) | rank_bb(5)) : (rank_bb(2) | rank_bb(3) | rank_bb(4));
+    U64 ourPawns = pos.pieces(Us, PAWN);
+    U64 theirPawns = pos.pieces(Them, PAWN);
+    U64 pawnAttacks = ei.attackedBy[Us][PAWN];
+    U64 theirPawnAttacks = ei.attackedBy[Them][PAWN];
+    U64 behindPawn = Us == WHITE ? BB::shift_s(ourPawns) : BB::shift_n(ourPawns);
+
+    for (int pt = KNIGHT; pt <= QUEEN; pt++) {
+        U64 b = pos.pieces(Us, pt);
+        ei.attackedBy[Us][pt] = 0;
+        while (b) {
+            int s = pop_lsb(b);
+            U64 att;
+            if (pt == KNIGHT) att = BB::KnightAttacks[s];
+            else if (pt == BISHOP) att = BB::bishop_attacks(s, occ ^ pos.pieces(Us, QUEEN));
+            else if (pt == ROOK) att = BB::rook_attacks(s, occ ^ pos.pieces(Us, QUEEN) ^ pos.pieces(Us, ROOK));
+            else att = BB::queen_attacks(s, occ);
+            if (pos.pinned & bit(s)) att &= BB::Line[ksq][s];
+            ei.attackedBy2[Us] |= ei.attackedBy[Us][6] & att;
+            ei.attackedBy[Us][6] |= att;
+            ei.attackedBy[Us][pt] |= att;
+            if (att & ei.kingZone[Them]) {
+                ei.kingAttackersCount[Us]++;
+                ei.kingAttackWeight[Us] += KingAttackWeight[pt] * popcount(att & ei.kingZone[Them]);
+            }
+            int mob = popcount(att & ei.mobilityArea[Us]);
+            if (pt == KNIGHT) {
+                score += MobilityKnight[mob];
+                if ((bit(s) & outpostRanks) && (bit(s) & pawnAttacks) && !(BB::PassedMask[Us][s] & ~file_bb(file_of(s)) & theirPawns)) score += KnightOutpost;
+                if (bit(s) & behindPawn) score += MinorBehindPawn;
+            } else if (pt == BISHOP) {
+                score += MobilityBishop[mob];
+                if ((bit(s) & outpostRanks) && (bit(s) & pawnAttacks) && !(BB::PassedMask[Us][s] & ~file_bb(file_of(s)) & theirPawns)) score += BishopOutpost;
+                if (bit(s) & behindPawn) score += MinorBehindPawn;
+            } else if (pt == ROOK) {
+                score += MobilityRook[mob];
+                U64 fileBB = file_bb(file_of(s));
+                if (!(fileBB & ourPawns)) score += (fileBB & theirPawns) ? RookSemiOpenFile : RookOpenFile;
+                if (relative_rank(Us, s) == 6 && relative_rank(Us, theirKsq) == 7) score += RookOnSeventh;
+            } else {
+                score += MobilityQueen[mob];
+            }
+        }
+    }
+    if (popcount(pos.pieces(Us, BISHOP)) >= 2) score += BishopPair;
+    (void)theirPawnAttacks;
+    return score;
+}
+
+template <int Us>
+static Score eval_king(const Position& pos, EvalInfo& ei) {
+    constexpr int Them = Us ^ 1;
+    Score score = 0;
+    int ksq = pos.king_sq(Us);
+    U64 ourPawns = pos.pieces(Us, PAWN);
+    U64 theirPawns = pos.pieces(Them, PAWN);
+    // pawn shield
+    int kf = file_of(ksq);
+    int kr = rank_of(ksq);
+    for (int f = std::max(0, kf - 1); f <= std::min(7, kf + 1); f++) {
+        U64 fileBB = file_bb(f);
+        U64 shield = fileBB & ourPawns & BB::ForwardRanks[Us][kr];
+        if (shield) {
+            int ps = Us == WHITE ? lsb(shield) : msb(shield);
+            int dist = std::abs(rank_of(ps) - kr) - 1;
+            if (dist < 3) score += KingShield[dist];
+        }
+        if (!(fileBB & ourPawns)) score += (fileBB & theirPawns) ? KingSemiOpenFile : KingOpenFile;
+    }
+    // attacks on king zone
+    if (ei.kingAttackersCount[Them] >= 2) {
+        U64 occ = pos.pieces();
+        U64 weak = ei.attackedBy[Them][6] & ~ei.attackedBy2[Us] & (~ei.attackedBy[Us][6] | ei.attackedBy[Us][KING] | ei.attackedBy[Us][QUEEN]);
+        U64 safe = ~pos.pieces(Them) & (~ei.attackedBy[Us][6] | (weak & ei.attackedBy2[Them]));
+        U64 rookChecks = BB::rook_attacks(ksq, occ) & safe & ei.attackedBy[Them][ROOK];
+        U64 bishopChecks = BB::bishop_attacks(ksq, occ) & safe & ei.attackedBy[Them][BISHOP];
+        U64 queenChecks = BB::queen_attacks(ksq, occ) & safe & ei.attackedBy[Them][QUEEN];
+        U64 knightChecks = BB::KnightAttacks[ksq] & safe & ei.attackedBy[Them][KNIGHT];
+        int danger = ei.kingAttackWeight[Them] + KingDanger[2] * popcount(ei.kingZone[Us] & weak) +
+                     (knightChecks ? SafeCheckWeight[KNIGHT] : 0) + (bishopChecks ? SafeCheckWeight[BISHOP] : 0) +
+                     (rookChecks ? SafeCheckWeight[ROOK] : 0) + (queenChecks ? SafeCheckWeight[QUEEN] : 0) -
+                     (pos.pieces(Them, QUEEN) ? 0 : KingDanger[3]) - KingDanger[4] * popcount(ei.attackedBy[Us][KNIGHT] & ei.kingZone[Us]);
+        if (danger > 0) score -= S(danger * danger / std::max(1, KingDanger[0]), danger / std::max(1, KingDanger[1]));
+    }
+    return score;
+}
+
+template <int Us>
+static Score eval_threats(const Position& pos, EvalInfo& ei) {
+    constexpr int Them = Us ^ 1;
+    constexpr int Up = Us == WHITE ? 8 : -8;
+    Score score = 0;
+    U64 theirNonPawn = pos.pieces(Them) & ~pos.pieces(Them, PAWN);
+    U64 theirMajors = pos.pieces(Them, ROOK, QUEEN);
+    // enemy pieces attacked by our pawns
+    score += ThreatByPawn * popcount(theirNonPawn & ei.attackedBy[Us][PAWN]);
+    // minor attacks on majors
+    score += ThreatMinorOnMajor * popcount(theirMajors & (ei.attackedBy[Us][KNIGHT] | ei.attackedBy[Us][BISHOP]));
+    score += ThreatRookOnQueen * popcount(pos.pieces(Them, QUEEN) & ei.attackedBy[Us][ROOK]);
+    // hanging pieces: attacked by us and not defended
+    U64 weak = pos.pieces(Them) & ~ei.attackedBy[Them][6] & ei.attackedBy[Us][6];
+    score += ThreatHanging * popcount(weak);
+    score += ThreatByKing * popcount(weak & ei.attackedBy[Us][KING]);
+    // safe pawn pushes threatening pieces
+    U64 empty = ~pos.pieces();
+    U64 pushes = (Us == WHITE ? BB::shift_n(pos.pieces(Us, PAWN)) : BB::shift_s(pos.pieces(Us, PAWN))) & empty;
+    pushes |= (Us == WHITE ? BB::shift_n(pushes & rank_bb(2)) : BB::shift_s(pushes & rank_bb(5))) & empty;
+    pushes &= ~ei.attackedBy[Them][PAWN] & (ei.attackedBy[Us][6] | ~ei.attackedBy[Them][6]);
+    U64 pushAttacks = BB::pawn_attacks_bb(Us, pushes) & theirNonPawn;
+    score += PawnPushThreat * popcount(pushAttacks);
+    (void)Up;
+    return score;
+}
+
+template <int Us>
+static Score eval_passed(const Position& pos, EvalInfo& ei) {
+    constexpr int Them = Us ^ 1;
+    constexpr int Up = Us == WHITE ? 8 : -8;
+    Score score = 0;
+    U64 b = ei.passed[Us];
+    int ksq = pos.king_sq(Us), theirKsq = pos.king_sq(Them);
+    while (b) {
+        int s = pop_lsb(b);
+        int r = relative_rank(Us, s);
+        Score bonus = PassedRank[r];
+        if (r >= 3) {
+            int front = s + Up;
+            int w = r - 2;  // 1..4
+            // king proximity (endgame)
+            int kd = std::min(BB::SqDist[theirKsq][front], 5) * 5 - std::min(BB::SqDist[ksq][front], 5) * 2;
+            bonus += S(0, kd * w);
+            if (!(pos.pieces() & bit(front))) {
+                U64 path = BB::ForwardRanks[Us][rank_of(s)] & file_bb(file_of(s));
+                bool safePath = !(path & ei.attackedBy[Them][6]);
+                bool defended = (path & ei.attackedBy[Us][6]) == path;
+                if (safePath) bonus += S(6 * w, 12 * w);
+                else if (!(bit(front) & ei.attackedBy[Them][6])) bonus += S(3 * w, 6 * w);
+                if (defended) bonus += S(2 * w, 4 * w);
+            } else if (pos.pieces(Them) & bit(front)) {
+                bonus -= S(2 * w, 4 * w);
+            }
+        }
+        score += bonus;
+    }
+    return score;
 }
 
 int evaluate(const Position& pos) {
+    EvalInfo ei;
+    memset(&ei, 0, sizeof(ei));
+    // pawn attacks and king info
+    for (int c = 0; c < 2; c++) {
+        int ksq = pos.king_sq(c);
+        ei.attackedBy[c][PAWN] = BB::pawn_attacks_bb(c, pos.pieces(c, PAWN));
+        ei.attackedBy[c][KING] = BB::KingAttacks[ksq];
+        ei.attackedBy2[c] = ei.attackedBy[c][PAWN] & ei.attackedBy[c][KING];
+        ei.attackedBy[c][6] = ei.attackedBy[c][PAWN] | ei.attackedBy[c][KING];
+        // king zone: king ring plus the ring shifted one rank forward
+        U64 zone = BB::KingAttacks[ksq] | bit(ksq);
+        zone |= c == WHITE ? BB::shift_n(zone) : BB::shift_s(zone);
+        ei.kingZone[c] = zone;
+    }
+    for (int c = 0; c < 2; c++) {
+        U64 lowRanks = c == WHITE ? (rank_bb(1) | rank_bb(2)) : (rank_bb(6) | rank_bb(5));
+        U64 blockedPawns = pos.pieces(c, PAWN) & ((c == WHITE ? BB::shift_s(pos.pieces()) : BB::shift_n(pos.pieces())) | lowRanks);
+        ei.mobilityArea[c] = ~(ei.attackedBy[c ^ 1][PAWN] | blockedPawns | pos.pieces(c, KING) | pos.pieces(c, QUEEN));
+    }
+
+    // pawn structure (hashed)
+    PawnEntry localPe;
+    PawnEntry& pe = UsePawnHash ? pawnTable[pos.pawnKey & (PAWN_HASH_SIZE - 1)] : localPe;
+    if (!UsePawnHash) localPe.key = 0;
+    if (pe.key != pos.pawnKey) {
+        pe.key = pos.pawnKey;
+        pe.score = eval_pawns<WHITE>(pos, pe) - eval_pawns<BLACK>(pos, pe);
+    }
+    ei.passed[WHITE] = pe.passed[WHITE];
+    ei.passed[BLACK] = pe.passed[BLACK];
+
+    Score score = pe.score;
+    score += eval_pieces<WHITE>(pos, ei) - eval_pieces<BLACK>(pos, ei);
+    score += eval_king<WHITE>(pos, ei) - eval_king<BLACK>(pos, ei);
+    score += eval_threats<WHITE>(pos, ei) - eval_threats<BLACK>(pos, ei);
+    score += eval_passed<WHITE>(pos, ei) - eval_passed<BLACK>(pos, ei);
+    score += pos.stm == WHITE ? Tempo : -Tempo;
+
+    int mg = pos.mg + mg_of(score);
+    int eg = pos.eg + eg_of(score);
+
+    // endgame scaling: drawish endings
+    int scale = 64;
+    {
+        int strong = eg > 0 ? WHITE : BLACK;
+        int weak = strong ^ 1;
+        int sp = popcount(pos.pieces(strong, PAWN));
+        int snp = pos.non_pawn_material(strong), wnp = pos.non_pawn_material(weak);
+        if (sp == 0) {
+            if (snp <= 3) scale = 0;                       // lone minor cannot win
+            else if (snp - wnp <= 3) scale = snp >= 10 ? 32 : 8;  // small material edge without pawns
+        } else if (sp <= 2 && snp <= wnp) {
+            scale = 40 + 8 * sp;
+        }
+        // opposite coloured bishops
+        if (scale == 64 && pos.pieces_pt(BISHOP) && popcount(pos.pieces(WHITE, BISHOP)) == 1 && popcount(pos.pieces(BLACK, BISHOP)) == 1) {
+            bool oppColor = ((pos.pieces(WHITE, BISHOP) & 0x55AA55AA55AA55AAULL) != 0) != ((pos.pieces(BLACK, BISHOP) & 0x55AA55AA55AA55AAULL) != 0);
+            if (oppColor) {
+                if (snp == 3 && wnp == 3) scale = 32;
+                else scale = 52;
+            }
+        }
+    }
+
     int phase = pos.phase > 24 ? 24 : pos.phase;
-    int score = (pos.mg * phase + pos.eg * (24 - phase)) / 24;
-    return pos.stm == WHITE ? score : -score;
+    int v = (mg * phase + eg * (24 - phase) * scale / 64) / 24;
+    return pos.stm == WHITE ? v : -v;
 }
 }

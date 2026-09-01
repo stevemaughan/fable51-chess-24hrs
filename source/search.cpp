@@ -152,6 +152,7 @@ void Searcher::set_time_limits() {
 }
 
 void Searcher::print_info(int depth, int score, Stack* ss, int bound) {
+    if (quiet) return;
     int64_t ms = elapsed();
     U64 nps = ms > 0 ? nodes * 1000 / ms : nodes;
     std::string s = "info depth " + std::to_string(depth) + " seldepth " + std::to_string(selDepth);
@@ -206,7 +207,7 @@ static inline Move pick_next(MoveList& ml, int idx) {
 // ---------------------------------------------------------------- quiescence
 int Searcher::qsearch(Position& pos, int alpha, int beta, Stack* ss) {
     nodes++;
-    if ((nodes & 2047) == 0) check_time();
+    if ((nodes & 1023) == 0) check_time();
     if (stopFlag) return 0;
     ss->pvLen = 0;
     bool pvNode = beta - alpha > 1;
@@ -294,7 +295,7 @@ int Searcher::search(Position& pos, int alpha, int beta, int depth, Stack* ss, b
     if (depth <= 0) return qsearch(pos, alpha, beta, ss);
 
     nodes++;
-    if ((nodes & 2047) == 0) check_time();
+    if ((nodes & 1023) == 0) check_time();
     if (stopFlag) return 0;
     if (ss->ply >= MAX_PLY) return Eval::evaluate(pos);
     if (ss->ply > selDepth) selDepth = ss->ply;
@@ -430,7 +431,7 @@ int Searcher::search(Position& pos, int alpha, int beta, int depth, Stack* ss, b
         keyStack[ss->ply + 1] = next.key;
         TT.prefetch(next.key);
         bool givesCheck = next.in_check();
-        if (givesCheck && extension == 0 && see_ge(pos, m, 0)) extension = 1;
+        if (givesCheck && extension == 0 && ss->ply < 2 * rootDepth && see_ge(pos, m, 0)) extension = 1;
 
         ss->currentMove = m;
         ss->movedPiece = pc;
@@ -546,6 +547,7 @@ void Searcher::start() {
     for (int depth = 1; depth <= maxDepth && rootMoves.size() > 1; depth++) {
         int delta = 20, alpha = -VALUE_INFINITE, beta = VALUE_INFINITE;
         if (depth >= 5) { alpha = std::max(score - delta, -VALUE_INFINITE); beta = std::min(score + delta, VALUE_INFINITE); }
+        rootDepth = depth;
         while (true) {
             selDepth = 0;
             score = search(rootPos, alpha, beta, depth, ss, false);
@@ -562,6 +564,7 @@ void Searcher::start() {
         }
         if (stopFlag) break;
         if (ss->pvLen > 0) bestMove = ss->pv[0];
+        rootScore = score;
         print_info(depth, score, ss, BOUND_EXACT);
         if (bestMove == prevBest) stableCount++; else stableCount = 0;
         prevBest = bestMove;
@@ -581,6 +584,8 @@ void Searcher::start() {
         print_info(1, score, ss, BOUND_EXACT);
     }
     (void)prevScore;
+    if (rootMoves.size() == 1) rootScore = score;
+    if (quiet) return;
     // In infinite mode we must wait for stop before printing bestmove
     while (limits.infinite && !stopFlag) std::this_thread::yield();
     std::lock_guard<std::mutex> lk(outMutex);

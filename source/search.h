@@ -39,6 +39,9 @@ public:
     int64_t softLimit = 0, hardLimit = 0;
     bool useTime = false;
     Move bestMove = MOVE_NONE;
+    int rootScore = 0;
+    bool quiet = false;
+    int rootDepth = 0;
 
     // history tables
     int16_t history[2][64][64];
