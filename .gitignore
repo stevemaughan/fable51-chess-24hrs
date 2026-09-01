@@ -35,3 +35,7 @@ Thumbs.db
 
 # The deliverable itself IS tracked (audit trail of what was in final/ over time)
 !final/Fable51chess24hrs.exe
+
+# tuning data
+source/tests/data/
+source/tests/*.txt
