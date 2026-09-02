@@ -118,3 +118,8 @@ Start: 2026-09-01T16:16:56-04:00. Deadline: 2026-09-02T16:16:56-04:00.
 - nn8 (HL384, lambda 0, 12.2M positions incl. dg4) training at normal priority; datagen round 5 (fixed engine) running at low priority.
 ### 02:30 — after TM re-tune on fixed TT
 - engine40f (TmDiv 30, TmStopPct 100, 32-bit TT) vs stash-25: 81% (+252, 100 games at 10+0.1). Installed (commit a9294d5). StopPct 80 vs 60 +61, 100 vs 60 +112; TmDiv 40 vs 30 -22; TmDiv 20 vs 30 +61 (Stop 60 base). SingMargin 2 vs 3: -21 (keep 3).
+## Hour 16 — 2026-09-02 02:45 (elapsed 10:28)
+- final/ = engine40f (commit a9294d5): 81% vs stash-25 (+252), 58% vs stash-30 (+56) at 10+0.1, 100 games each → est. ~3200 Elo. stash-33 gauntlet running.
+- TM ladder on fixed base (Stop 100): TmDiv 20 vs 30 +48, TmDiv 15 vs 30 +30; 24/40/MaxFactor150/HardPct25 running. Margin reverts neutral (+3 combined) → keep.
+- nn8 (HL384, 12.2M positions) at epoch ~35/120; datagen round 5 (fixed engine) running.
+- Plan: adopt TmDiv 20 if confirmed; then NNUE nn8 test; PGO build; final verification from ~14:00.
