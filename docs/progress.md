@@ -64,3 +64,8 @@ Start: 2026-09-01T16:16:56-04:00. Deadline: 2026-09-02T16:16:56-04:00.
 - Gauntlet at 10+0.1 (100 games each, same openings): engine13f: 54% vs stash-21, 31% vs stash-25, 13% vs stash-30. engine19f: 69.5% vs stash-21 (in progress vs 25/30). Earlier 42.5% of engine13f vs stash-25 was noise.
 - final/ = engine19f (commit 0e871b6). Estimated Elo ~2850-2900 (stash-21 +143, stash-25 -96).
 - Next: A/B batch 3 (FutMargin 300, RfpMargin 45, QsDelta 60, SingMargin 4, LmrCaptPct 70, NmpEvalDiv 150, LmpBase 2, FutDepth 10, RfpDepth 10, HistBonusQ 24), then time-management A/B at 10+0.1.
+## Hour 7 — 2026-09-01 21:50 (elapsed 5:33)
+- final/ = engine19f (~2850). Gauntlet 10+0.1: engine19f 69.5% vs stash-21, 31% vs stash-25, 11.5% vs stash-30.
+- NNUE built: trainer (nnue_train.cpp, 768->128x2->1, CReLU, Adam, 4 s/epoch on 5.4M positions), AVX2 int16 inference with incremental accumulators (verified exact vs from-scratch and vs trainer float output). Net nn2 (100 epochs, val MSE 0.0261 < HCE 0.0272 on same target) still loses 18% vs HCE at 5+0.05 — evaluation quality (king safety) too weak with 5M low-depth positions. HL=256 net training; datagen round 3 (engine19, 10k nodes) continues at low priority to grow the dataset.
+- A/B batch 3 on engine19 (150 games each): FutMargin 300 +21, RfpMargin 45 +12, QsDelta 60 ?, SingMargin 4 +7, LmrCaptPct 70 -2 → none adopted yet (noise level). Remaining: LmpBase 2, FutDepth 10, RfpDepth 10, HistBonusQ 24.
+- Decision: HCE remains the main line; NNUE only ships if it beats HCE head-to-head and vs Stash.

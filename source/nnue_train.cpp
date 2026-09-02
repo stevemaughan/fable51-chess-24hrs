@@ -5,6 +5,7 @@
 #include <cmath>
 #include <cstring>
 #include <fstream>
+#include <iostream>
 #include <string>
 #include <vector>
 #include <thread>
@@ -12,7 +13,10 @@
 #include <algorithm>
 #include <chrono>
 
-static const int HL = 128;
+#ifndef HL_SIZE
+#define HL_SIZE 128
+#endif
+static const int HL = HL_SIZE;
 static const int NIN = 768;
 static const int QA = 127, QB = 64;
 static double K_SIG = 0.31 * std::log(10.0) / 400.0;   // matches Texel K used for the HCE
@@ -133,6 +137,24 @@ static bool load_float(const char* file) {
 }
 
 int main(int argc, char** argv) {
+    if (argc >= 3 && std::string(argv[1]) == "check") {
+        BB::init(); Zobrist::init();
+        if (!load_float(argv[2])) { puts("no weights"); return 1; }
+        std::string fen;
+        while (std::getline(std::cin, fen)) {
+            if (fen.empty()) continue;
+            Position pos; pos.set_fen(fen);
+            Sample s; s.n = 0; s.stm = (uint8_t)pos.stm; s.target = 0;
+            U64 b = pos.pieces(); while (b) { int sq = pop_lsb(b); s.f[s.n++] = (uint16_t)(pos.board[sq] * 64 + sq); }
+            float accW[HL], accB[HL];
+            for (int i = 0; i < HL; i++) { accW[i] = NB1[i]; accB[i] = NB1[i]; }
+            for (int k = 0; k < s.n; k++) { const float* rw = &W1[s.f[k] * HL]; const float* rb = &W1[flip_idx(s.f[k]) * HL]; for (int i = 0; i < HL; i++) { accW[i] += rw[i]; accB[i] += rb[i]; } }
+            float* aU = s.stm == WHITE ? accW : accB; float* aT = s.stm == WHITE ? accB : accW;
+            float out = NB2; for (int i = 0; i < HL; i++) out += W2[i] * std::min(1.f, std::max(0.f, aU[i])) + W2[HL + i] * std::min(1.f, std::max(0.f, aT[i]));
+            printf("float eval %.1f%c", out, 10);
+        }
+        return 0;
+    }
     if (argc < 7) { printf("usage: nnue_train <out.h> <epochs> <threads> <lambda> <lr> <data>...\n"); return 1; }
     BB::init(); Zobrist::init();
     const char* outfile = argv[1];
