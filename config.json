@@ -32,7 +32,7 @@
         "additional_lines_rgx": [],
         "event_name": "Fastchess Tournament",
         "site": "?",
-        "file": "source\\tests\\eval3_vs_stash20.pgn",
+        "file": "source\\tests\\g_final54_stash33_d.pgn",
         "notation": 0,
         "append_file": true,
         "track_nodes": false,
@@ -60,17 +60,17 @@
     },
     "config_name": "config.json",
     "output": 0,
-    "seed": 16276950512429897476,
+    "seed": 13579,
     "variant": 0,
     "type": 0,
     "gauntlet_seeds": 1,
-    "ratinginterval": 20,
+    "ratinginterval": 1000,
     "scoreinterval": 1,
     "wait": 0,
     "autosaveinterval": 20,
     "games": 2,
-    "rounds": 50,
-    "concurrency": 10,
+    "rounds": 150,
+    "concurrency": 8,
     "force_concurrency": false,
     "recover": true,
     "noswap": false,
@@ -89,9 +89,9 @@
     },
     "engines": [
         {
-            "name": "eval3",
+            "name": "final",
             "dir": "",
-            "cmd": "source\\build\\engine3.exe",
+            "cmd": "final\\Fable51chess24hrs.exe",
             "args": "",
             "restart": false,
             "options": [
@@ -114,9 +114,9 @@
             "variant": 0
         },
         {
-            "name": "stash20",
+            "name": "stash33",
             "dir": "",
-            "cmd": "resources\\engines\\stash-20.0.1-windows-x86_64-bmi2.exe",
+            "cmd": "resources\\engines\\stash-33.0-windows-x86_64-bmi2.exe",
             "args": "",
             "restart": false,
             "options": [
@@ -140,16 +140,16 @@
         }
     ],
     "stats": {
-        "eval3 vs stash20": {
-            "wins": 37,
-            "losses": 49,
-            "draws": 14,
-            "penta_WW": 7,
-            "penta_WD": 10,
-            "penta_WL": 13,
-            "penta_DD": 1,
-            "penta_LD": 2,
-            "penta_LL": 17
+        "final vs stash33": {
+            "wins": 95,
+            "losses": 117,
+            "draws": 88,
+            "penta_WW": 12,
+            "penta_WD": 30,
+            "penta_WL": 41,
+            "penta_DD": 11,
+            "penta_LD": 36,
+            "penta_LL": 20
         }
     }
 }
