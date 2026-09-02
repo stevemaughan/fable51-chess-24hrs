@@ -74,3 +74,6 @@ Start: 2026-09-01T16:16:56-04:00. Deadline: 2026-09-02T16:16:56-04:00.
 - NNUE: HL=256 net (val 0.0253) = -160 vs HCE (100 games); HL=128 = -260. Data (5.4M positions) insufficient; datagen round 3 continues at low priority (~50k positions/10 min). Training nn4 (HL=256, lambda 0.2) at low priority.
 - Time management A/B at 10+0.1: TmDiv 18 (more time/move) = -92 → current allocation (t/24 + 0.75 inc) is not too stingy. TmDiv 32, TmIncPct 50/100 running; batch 4 (IIR depth, NMP min depth, LMR pv/improving/cutnode terms, check ext, probcut/razor depth) queued.
 - Plan: continue HCE A/B (main line); retrain NNUE when data reaches ~10M; PGO build and final verification reserved for the last 2 hours.
+### 22:40 — time management bug found (big)
+- At 10+0.1 self-play: TmDiv 32 = +130, TmDiv 45 = +264, TmDiv 60 = +366 (89%) vs the old t/24. Cause: hard limit t/3 × stacked extension factors (score-drop 1.6 × node-fraction 1.35) let the engine spend 1-2 s on a few moves, then it played 211 moves at depth 1 in time trouble (new side: 35). No time forfeits either way.
+- final/ = engine23f with TmDiv 60 (commit 937add3). Batch running vs this base: TmHardPct 12, TmDiv 45/32 + TmHardPct 12, TmDiv 80, TmHardMul 2.
