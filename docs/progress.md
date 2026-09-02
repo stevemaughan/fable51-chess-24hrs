@@ -203,3 +203,5 @@ Start: 2026-09-01T16:16:56-04:00. Deadline: 2026-09-02T16:16:56-04:00.
 ## Hour 37 — 2026-09-02 14:25 (elapsed 22:08)
 - stash-33 fourth sample: 46.3% (300) → 45.6% over 800 games (-31 Elo → ~3255). Final calibration of engine54f at 10+0.1 / Hash 256: stash-30 69% (200), stash-33 45.6% (800), stash-37 23.5% (200); 1400 games, 0 time forfeits, 0 crashes, 0 illegal moves.
 - Final estimate: ~3250 Elo (CCRL blitz scale), ±30. No further changes; waiting for the deadline (16:16:56), then README.
+## Hour 38 — 2026-09-02 15:17 (elapsed 23:00)
+- No changes since 13:30. final/ = engine54f (md5 954834cd01dc…), README.md written and committed (72442c5). Waiting for the deadline at 16:16:56.
