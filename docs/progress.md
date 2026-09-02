@@ -145,3 +145,8 @@ Start: 2026-09-01T16:16:56-04:00. Deadline: 2026-09-02T16:16:56-04:00.
 ## Hour 21 — 2026-09-02 06:10 (elapsed 13:53)
 - Paired 200-game samples vs stash-30 (10+0.1, same openings): NNUE nn8 61% (+78), HCE engine41f 56.75% (+47). Earlier 100-game samples: nn8 56%/44.5% vs stash-30/33, HCE 59%/40.5%. Direct nn8 vs HCE at 10+0.1: +40 (200 games); second sample running. nn9 (15M) = nn8 (-5).
 - engine47f built: NNUE nn8 (HL384) + fixed TT + TmDiv 20 + MoveOverhead 50, options hidden except Hash/MoveOverhead/Threads/UseNNUE. To be installed after the second direct sample.
+## Hour 22 — 2026-09-02 07:00 (elapsed 14:43)
+- final/ = engine47f (NNUE nn8, commit 515ccd3): 41.5% vs stash-33 (100 games), 61% vs stash-30 (200 games) → est. ~3230 Elo. Second direct sample vs HCE +53 (200 games); combined +46 over 400 games.
+- NNUE margin A/B (5+0.05, 150 games): FutMargin 150 +7, 300 ±0; RfpMargin 45/80, QsDelta 200, LmrDiv 240, NmpEvalDiv 150, SingMargin 2 running.
+- nn11 (HL384, 200 epochs, slower LR decay, 15.2M positions) training, epoch ~50.
+- Final phase plan unchanged: ~13:30 PGO build + verification; install by 15:30; README after 16:17.
