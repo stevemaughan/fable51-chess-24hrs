@@ -168,3 +168,5 @@ Start: 2026-09-01T16:16:56-04:00. Deadline: 2026-09-02T16:16:56-04:00.
 - No other experiments running; all search/TM/eval knobs are final. Hard stop for changes 15:15.
 ### 09:15 — ladder complete for final/ (engine49f, 10+0.1, Hash 256)
 - vs stash-30 (3166): 61% (200) and 54% (80, loaded); vs stash-33 (3286): 41.5% (100) + 48.5% (200); vs stash-37 (3424): 25.5% (100). No time losses in any. Estimate ~3250 Elo (CCRL-blitz-anchored, ±40).
+## Hour 27 — 2026-09-02 09:40 (elapsed 17:23)
+- final/ unchanged (engine49f, ~3250). Waiting on nn12 (HL512, epoch ~75/120) and datagen 6 (~90%) → nn13. Both chained to 200-game 10+0.1 tests vs nn8; a candidate replaces final/ only with a clear (>+30) result and a clean stash sanity run.
