@@ -99,3 +99,8 @@ Start: 2026-09-01T16:16:56-04:00. Deadline: 2026-09-02T16:16:56-04:00.
 - Added options NoDrawTT (skip TT store of repetition draw scores; default on in engine30+) and CorrHist (on/off). Neither adopted into final/ yet.
 - NNUE: nn6 (HL256, lambda 0) = 50% vs HCE and 45.5% vs stash-25 (HCE: 45%) — parity. nn7 (HL384, 9.4M positions) training (epoch 22/120).
 - 300-game TmDiv 50 vs 100 (10+0.1) running.
+## Hour 13 — 2026-09-02 01:15 (elapsed 8:58)
+- Root cause hunt for "more time = worse": fixed depth 17 lost 0-60 to depth 13 (!); 300-game TmDiv 50 vs 100 = -160; clean 0.3s vs 0.15s = -104 (engine31), -53 (engine27). Logged games show the deeper side stuck at ±0.02 scores while losing: it treats a return to the ROOT position (4-ply shuffle) as an in-tree 2-fold draw, giving a false draw floor that the opponent's refutations (LMR-reduced at high depth) fail to break.
+- Fix (engine33): root position counts as game history (needs a second repetition), only strictly-in-tree repetitions are 2-fold draws (Stockfish rule). Testing depth 17 vs 13 and 0.3s vs 0.15s now. If confirmed, the whole TM ladder (which was compensating for this) must be re-tuned.
+- Also added options NoDrawTT, CorrHist, RepTwofold for diagnostics.
+- NNUE: nn6 = parity with HCE; nn7 (HL384) training (~epoch 70/120).
