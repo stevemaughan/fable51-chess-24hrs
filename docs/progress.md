@@ -150,3 +150,7 @@ Start: 2026-09-01T16:16:56-04:00. Deadline: 2026-09-02T16:16:56-04:00.
 - NNUE margin A/B (5+0.05, 150 games): FutMargin 150 +7, 300 ±0; RfpMargin 45/80, QsDelta 200, LmrDiv 240, NmpEvalDiv 150, SingMargin 2 running.
 - nn11 (HL384, 200 epochs, slower LR decay, 15.2M positions) training, epoch ~50.
 - Final phase plan unchanged: ~13:30 PGO build + verification; install by 15:30; README after 16:17.
+## Hour 23 — 2026-09-02 07:55 (elapsed 15:38)
+- final/ = engine47f (NNUE nn8). NNUE margin batch (5+0.05, 150 games each): LmrDiv 240 +54 (candidate, verifying at 10+0.1 with 200 games), NmpEvalDiv 150 +33, RfpMargin 45 +21, others neutral (FutMargin 150/300, RfpMargin 80, QsDelta 200, SingMargin 2).
+- nn11 (200-epoch schedule) at epoch ~160; chained 200-game test vs nn8 at 10+0.1.
+- Final build script ready (build_final.sh: PGO + NNUE + hidden options + DLL check).
