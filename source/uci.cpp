@@ -184,7 +184,7 @@ int main(int argc, char** argv) {
             out("id name Fable 5.1 chess 24hrs");
             out("id author Fable 5.1");
             out("option name Hash type spin default 64 min 1 max 4096");
-            out("option name MoveOverhead type spin default 40 min 0 max 5000");
+            out("option name MoveOverhead type spin default 50 min 0 max 5000");
             out("option name Threads type spin default 1 min 1 max 1");
 #ifdef USE_NNUE
             out("option name UseNNUE type check default true");
