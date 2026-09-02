@@ -163,3 +163,6 @@ Start: 2026-09-01T16:16:56-04:00. Deadline: 2026-09-02T16:16:56-04:00.
 - final/ = engine49f (commit aeb126b): NNUE nn8, fixed TT, TmDiv 20, MoveOverhead 50, clock fallback if own clock missing. Est. ~3260 Elo (48.5% vs stash-33 over 200 games; 61% vs stash-30 over 200).
 - nn11 = nn8 (-9); PGO ~10% slower (rejected); compiler flags: -O3 -flto -mtune=znver4 fastest (generic -3%, -O2 -12%, no-LTO -5%).
 - Remaining time (7.5 h): datagen round 6 with the NNUE engine (fresh labels), HL512 net training (nn12) on 15M positions. Any candidate must beat nn8 by a clear margin in a 200-game 10+0.1 match to replace final/. Hard stop for changes: 15:15; final verification 15:15-16:00.
+## Hour 26 — 2026-09-02 09:15 (elapsed 16:58)
+- final/ = engine49f (unchanged). Background: nn12 (HL512, 15M positions) training (~epoch 40/120, 45 s/epoch) → chained 200-game test vs nn8 at 10+0.1; datagen round 6 with the NNUE engine (~25%) → chained nn13 training on rounds 3-6.
+- No other experiments running; all search/TM/eval knobs are final. Hard stop for changes 15:15.
