@@ -93,3 +93,9 @@ Start: 2026-09-01T16:16:56-04:00. Deadline: 2026-09-02T16:16:56-04:00.
 - TmStopPct 40 +58, 60 +101 (adopted); TmDiv 60+Stop 50 +58. Search-knob batch (10 tests): nothing adopted (LmrImproving=0 -85, LmrPv=0 -28, IirDepth 6 -37, rest neutral).
 - NNUE nn6 (HL256, lambda 0.0, 8.2M positions) trained (val 0.00159 on score-only target); fair match vs HCE running. nn4 (lambda 0.2) was -95, nn5 (0.5) -230 → lambda toward search scores helps.
 - Next: TM refinements (TmDiv 70/140, StopPct 75 with base Stop 60), NNUE decision, PGO build test when CPU frees.
+## Hour 12 — 2026-09-02 00:45 (elapsed 8:28)
+- final/ = engine27f (~2910). TM plateau: TmDiv 140 = 100 (both Stop 60); Stop 75 neutral; TmDiv 70 -111.
+- Diagnostics of "less time = better": fixed depth 14 beats depth 10 by +117 (no depth pathology). Fixed movetime 0.3 s vs 0.15 s gave -297 (150 games, engine27, heavy load) but +61/+114/+168 with engine30/31 (NoDrawTT / CorrHist off / Hash 512 variants, 60-80 games). Inconclusive; a clean rerun is scheduled when the machine is quiet.
+- Added options NoDrawTT (skip TT store of repetition draw scores; default on in engine30+) and CorrHist (on/off). Neither adopted into final/ yet.
+- NNUE: nn6 (HL256, lambda 0) = 50% vs HCE and 45.5% vs stash-25 (HCE: 45%) — parity. nn7 (HL384, 9.4M positions) training (epoch 22/120).
+- 300-game TmDiv 50 vs 100 (10+0.1) running.
