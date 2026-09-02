@@ -195,3 +195,5 @@ Start: 2026-09-01T16:16:56-04:00. Deadline: 2026-09-02T16:16:56-04:00.
 - Final verification: compliance passed; runs with PATH=C:\Windows\System32 only (imports KERNEL32.dll, msvcrt.dll only); perft startpos d5 = 4865609 and kiwipete d4 = 4085603 exact; `uci` reports "Fable 5.1 chess 24hrs" / "Fable 5.1"; options Hash, MoveOverhead(50), Threads(1), UseNNUE(true).
 - Estimated strength: ~3250 Elo (CCRL-blitz anchors: stash-30 60-66%, stash-33 43-48%, stash-37 25%).
 - No further engine changes. Remaining time used only for extra calibration games for the README.
+### 13:50 — extra calibration of the frozen final (engine54f), 10+0.1, Hash 256, 200 games each
+- vs stash-30 (3166): 69.0% (+139); vs stash-37 (3424): 23.5% (-205); earlier vs stash-33 (3286): 43.5% over 300. No time losses in 600 games. Estimate ~3250-3270 Elo (CCRL blitz scale), ±40.
