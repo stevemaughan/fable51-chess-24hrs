@@ -107,3 +107,8 @@ Start: 2026-09-01T16:16:56-04:00. Deadline: 2026-09-02T16:16:56-04:00.
 ### 01:45 — ROOT CAUSE: 16-bit TT keys
 - With the TT cleared every move, depth 17 beat depth 13 by 84%; with the persisted TT it lost 0-60. Strict threefold and repetition-aware TT stores changed nothing. Widening TT keys to 32 bits (2 entries per 32-byte bucket) fixed it completely: depth 17 vs 13 = 27-0-13 (84%). The 16-bit key false hits (3 per 65536 probes, growing as the table fills within a game) poisoned every long search; all the "less time is better" time-management results were compensating for this.
 - Consequence: time management must be re-tuned (TmDiv 30/50/70 vs 100); NNUE (nn7 HL384 = +47 vs HCE) to be rebuilt on the fixed base.
+## Hour 14 — 2026-09-02 01:50 (elapsed 9:33)
+- TT key bug fixed (32-bit keys, 2-entry buckets, engine37). With it: depth 17 vs 13 = 84%; TmDiv 30 vs 100 = +168 at 10+0.1 (time is valuable again). Re-tuning TM: TmDiv 50/70 vs 100 running, then a ladder around 30 (20, 40, StopPct 80/100, MaxFactor 150).
+- NNUE nn7 (HL384) vs fixed HCE: +16 (150 games) — parity. HCE remains the main line; NNUE stays as an option.
+- final/ still engine27f (16-bit TT); engine37f (fixed TT, TmDiv 100) being verified vs stash-25 before install; then install the re-tuned TM.
+- Remaining plan (14.4 h left): finish TM re-tune (~1 h), re-run A/B batches of search margins on the fixed base (they were tuned under the TT bug), NNUE retrain with dg4 data, PGO build, final verification 2 h before the deadline.
