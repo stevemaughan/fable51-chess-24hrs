@@ -188,3 +188,5 @@ Start: 2026-09-01T16:16:56-04:00. Deadline: 2026-09-02T16:16:56-04:00.
 - final/ = engine52f (nn13), verified. No other work in flight.
 ## Hour 33 — 2026-09-02 12:40 (elapsed 20:23)
 - nn14 (HL384, rounds 4-7 incl. 2.2M positions from the nn13 engine, val 0.00162) vs nn13: +53 (57.5%, 200 games at 10+0.1). Second 200-game sample running; if combined ≥ +25, engine54f (pre-built, nn14) replaces final/ after a stash-33 sanity run. Deadline for changes 15:15.
+## Hour 34 — 2026-09-02 13:10 (elapsed 20:53)
+- nn14 second sample +16 → +34 over 400 games vs nn13; installed as engine54f (commit a07e6a0). BUT sanity vs Stash: 36% vs stash-33, 60.5% vs stash-30 (nn13 had 45.5% / 66%) — the self-play gain may not transfer (trained on its parent's games). Paired 200-game tests of nn14 and nn13 vs stash-33 with identical openings running; final/ goes to whichever is better against Stash. Decision by ~13:40, then no further changes.
