@@ -186,3 +186,5 @@ Start: 2026-09-01T16:16:56-04:00. Deadline: 2026-09-02T16:16:56-04:00.
 ## Hour 32 — 2026-09-02 12:00 (elapsed 19:43)
 - Datagen round 7 done (2.2M positions from the nn13 engine). nn14 training on rounds 4-7 (~10M positions, 10 threads, 10 s/epoch) → chained 200-game test vs nn13 at 10+0.1 (~12:40).
 - final/ = engine52f (nn13), verified. No other work in flight.
+## Hour 33 — 2026-09-02 12:40 (elapsed 20:23)
+- nn14 (HL384, rounds 4-7 incl. 2.2M positions from the nn13 engine, val 0.00162) vs nn13: +53 (57.5%, 200 games at 10+0.1). Second 200-game sample running; if combined ≥ +25, engine54f (pre-built, nn14) replaces final/ after a stash-33 sanity run. Deadline for changes 15:15.
