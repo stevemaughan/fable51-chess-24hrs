@@ -22,6 +22,7 @@ struct Stack {
     Move pv[MAX_PLY + 1];
     int pvLen;
     int16_t (*contHist)[12][64];
+    bool hadRep;
 };
 
 extern TranspositionTable TT;

@@ -11,13 +11,13 @@ TranspositionTable TT;
 int MoveOverhead = 40;
 int SP_LmrBase = 80, SP_LmrDiv = 200, SP_RfpMargin = 60, SP_RfpImproving = 50, SP_RazorMargin = 200, SP_NmpBase = 3, SP_NmpDiv = 3, SP_NmpEvalDiv = 200,
     SP_ProbcutMargin = 180, SP_LmpBase = 3, SP_FutBase = 120, SP_FutMargin = 220, SP_HistPrune = 3000, SP_SeeQuiet = 40, SP_SeeCapt = 100, SP_SingMargin = 3,
-    SP_HistDiv = 6000, SP_AspDelta = 20, SP_RfpDepth = 8, SP_LmpDepth = 8, SP_FutDepth = 8, SP_HistBonusQ = 16, SP_HistBonusL = 80, SP_HistMax = 2000, SP_NodeTm = 1, SP_SingDouble = 20, SP_LmrCaptPct = 50, SP_QsDelta = 120, SP_TmDiv = 100, SP_TmIncPct = 75, SP_TmHardPct = 33, SP_TmHardMul = 4, SP_IirDepth = 4, SP_NmpMinDepth = 3, SP_LmrPv = 1, SP_CheckExt = 1, SP_ProbcutDepth = 5, SP_RazorDepth = 3, SP_LmrImproving = 1, SP_LmrCut = 1, SP_TmMaxFactor = 216, SP_TmStopPct = 60, SP_NoDrawTT = 1, SP_CorrHist = 1, SP_RepTwofold = 1, SP_ClearTT = 0;
+    SP_HistDiv = 6000, SP_AspDelta = 20, SP_RfpDepth = 8, SP_LmpDepth = 8, SP_FutDepth = 8, SP_HistBonusQ = 16, SP_HistBonusL = 80, SP_HistMax = 2000, SP_NodeTm = 1, SP_SingDouble = 20, SP_LmrCaptPct = 50, SP_QsDelta = 120, SP_TmDiv = 100, SP_TmIncPct = 75, SP_TmHardPct = 33, SP_TmHardMul = 4, SP_IirDepth = 4, SP_NmpMinDepth = 3, SP_LmrPv = 1, SP_CheckExt = 1, SP_ProbcutDepth = 5, SP_RazorDepth = 3, SP_LmrImproving = 1, SP_LmrCut = 1, SP_TmMaxFactor = 216, SP_TmStopPct = 60, SP_NoDrawTT = 1, SP_CorrHist = 1, SP_RepTwofold = 1, SP_ClearTT = 0, SP_RepTT = 1;
 SParam SParams[] = {
     {"LmrBase", &SP_LmrBase}, {"LmrDiv", &SP_LmrDiv}, {"RfpMargin", &SP_RfpMargin}, {"RfpImproving", &SP_RfpImproving}, {"RazorMargin", &SP_RazorMargin},
     {"NmpBase", &SP_NmpBase}, {"NmpDiv", &SP_NmpDiv}, {"NmpEvalDiv", &SP_NmpEvalDiv}, {"ProbcutMargin", &SP_ProbcutMargin}, {"LmpBase", &SP_LmpBase},
     {"FutBase", &SP_FutBase}, {"FutMargin", &SP_FutMargin}, {"HistPrune", &SP_HistPrune}, {"SeeQuiet", &SP_SeeQuiet}, {"SeeCapt", &SP_SeeCapt},
     {"SingMargin", &SP_SingMargin}, {"HistDiv", &SP_HistDiv}, {"AspDelta", &SP_AspDelta}, {"RfpDepth", &SP_RfpDepth}, {"LmpDepth", &SP_LmpDepth},
-    {"FutDepth", &SP_FutDepth}, {"HistBonusQ", &SP_HistBonusQ}, {"HistBonusL", &SP_HistBonusL}, {"HistMax", &SP_HistMax}, {"NodeTm", &SP_NodeTm}, {"SingDouble", &SP_SingDouble}, {"LmrCaptPct", &SP_LmrCaptPct}, {"QsDelta", &SP_QsDelta}, {"TmDiv", &SP_TmDiv}, {"TmIncPct", &SP_TmIncPct}, {"TmHardPct", &SP_TmHardPct}, {"TmHardMul", &SP_TmHardMul}, {"IirDepth", &SP_IirDepth}, {"NmpMinDepth", &SP_NmpMinDepth}, {"LmrPv", &SP_LmrPv}, {"CheckExt", &SP_CheckExt}, {"ProbcutDepth", &SP_ProbcutDepth}, {"RazorDepth", &SP_RazorDepth}, {"LmrImproving", &SP_LmrImproving}, {"LmrCut", &SP_LmrCut}, {"TmMaxFactor", &SP_TmMaxFactor}, {"TmStopPct", &SP_TmStopPct}, {"NoDrawTT", &SP_NoDrawTT}, {"CorrHist", &SP_CorrHist}, {"RepTwofold", &SP_RepTwofold}, {"ClearTT", &SP_ClearTT},
+    {"FutDepth", &SP_FutDepth}, {"HistBonusQ", &SP_HistBonusQ}, {"HistBonusL", &SP_HistBonusL}, {"HistMax", &SP_HistMax}, {"NodeTm", &SP_NodeTm}, {"SingDouble", &SP_SingDouble}, {"LmrCaptPct", &SP_LmrCaptPct}, {"QsDelta", &SP_QsDelta}, {"TmDiv", &SP_TmDiv}, {"TmIncPct", &SP_TmIncPct}, {"TmHardPct", &SP_TmHardPct}, {"TmHardMul", &SP_TmHardMul}, {"IirDepth", &SP_IirDepth}, {"NmpMinDepth", &SP_NmpMinDepth}, {"LmrPv", &SP_LmrPv}, {"CheckExt", &SP_CheckExt}, {"ProbcutDepth", &SP_ProbcutDepth}, {"RazorDepth", &SP_RazorDepth}, {"LmrImproving", &SP_LmrImproving}, {"LmrCut", &SP_LmrCut}, {"TmMaxFactor", &SP_TmMaxFactor}, {"TmStopPct", &SP_TmStopPct}, {"NoDrawTT", &SP_NoDrawTT}, {"CorrHist", &SP_CorrHist}, {"RepTwofold", &SP_RepTwofold}, {"ClearTT", &SP_ClearTT}, {"RepTT", &SP_RepTT},
 };
 int SParamCount = sizeof(SParams) / sizeof(SParams[0]);
 static int lmrTableG[64][64];
@@ -228,10 +228,11 @@ int Searcher::qsearch(Position& pos, int alpha, int beta, Stack* ss) {
     if ((nodes & 1023) == 0) check_time();
     if (stopFlag) return 0;
     ss->pvLen = 0;
+    ss->hadRep = false;
     bool pvNode = beta - alpha > 1;
     if (ss->ply >= MAX_PLY) return Eval::evaluate(pos);
     if (ss->ply > selDepth) selDepth = ss->ply;
-    if (is_repetition(pos, ss->ply) || pos.halfmove >= 100) return 1 - (int)(nodes & 2);
+    if (is_repetition(pos, ss->ply) || pos.halfmove >= 100) { ss->hadRep = true; return 1 - (int)(nodes & 2); }
 
     bool ttHit;
     TTEntry* tte = TT.probe(pos.key, ttHit);
@@ -287,6 +288,7 @@ int Searcher::qsearch(Position& pos, int alpha, int beta, Stack* ss) {
         if (stopFlag) return 0;
         if (score > bestScore) {
             bestScore = score;
+            bestRep = (ss + 1)->hadRep;
             if (score > alpha) {
                 bestMove = m;
                 alpha = score;
@@ -301,7 +303,8 @@ int Searcher::qsearch(Position& pos, int alpha, int beta, Stack* ss) {
     }
     if (inCheck && moveCount == 0) return -VALUE_MATE + ss->ply;
     int bound = bestScore >= beta ? BOUND_LOWER : (pvNode && bestMove != MOVE_NONE) ? BOUND_EXACT : BOUND_UPPER;
-    if (!(SP_NoDrawTT && std::abs(bestScore) <= 1)) TT.store(tte, pos.key, bestMove, score_to_tt(bestScore, ss->ply), eval, 0, bound);
+    ss->hadRep = bestRep;
+    if (!(SP_NoDrawTT && std::abs(bestScore) <= 1) && !(SP_RepTT && bestRep)) TT.store(tte, pos.key, bestMove, score_to_tt(bestScore, ss->ply), eval, 0, bound);
     return bestScore;
 }
 
@@ -310,6 +313,7 @@ int Searcher::search(Position& pos, int alpha, int beta, int depth, Stack* ss, b
     bool pvNode = beta - alpha > 1;
     bool rootNode = ss->ply == 0;
     ss->pvLen = 0;
+    ss->hadRep = false;
     if (depth <= 0) return qsearch(pos, alpha, beta, ss);
 
     nodes++;
@@ -319,7 +323,7 @@ int Searcher::search(Position& pos, int alpha, int beta, int depth, Stack* ss, b
     if (ss->ply > selDepth) selDepth = ss->ply;
 
     if (!rootNode) {
-        if (is_repetition(pos, ss->ply) || pos.halfmove >= 100) return 1 - (int)(nodes & 2);
+        if (is_repetition(pos, ss->ply) || pos.halfmove >= 100) { ss->hadRep = true; return 1 - (int)(nodes & 2); }
         alpha = std::max(alpha, -VALUE_MATE + ss->ply);
         beta = std::min(beta, VALUE_MATE - ss->ply - 1);
         if (alpha >= beta) return alpha;
@@ -424,6 +428,7 @@ int Searcher::search(Position& pos, int alpha, int beta, int depth, Stack* ss, b
 
     int bestScore = -VALUE_INFINITE;
     Move bestMove = MOVE_NONE;
+    bool bestRep = false;
     int moveCount = 0;
     Move quietsTried[128];
     int quietCount = 0;
@@ -524,6 +529,7 @@ int Searcher::search(Position& pos, int alpha, int beta, int depth, Stack* ss, b
 
         if (score > bestScore) {
             bestScore = score;
+            bestRep = (ss + 1)->hadRep;
             if (score > alpha) {
                 bestMove = m;
                 alpha = score;
@@ -572,7 +578,8 @@ int Searcher::search(Position& pos, int alpha, int beta, int depth, Stack* ss, b
     }
     if (!excluded) {
         int bound = bestScore >= beta ? BOUND_LOWER : (pvNode && bestMove != MOVE_NONE) ? BOUND_EXACT : BOUND_UPPER;
-        if (!(SP_NoDrawTT && std::abs(bestScore) <= 1)) TT.store(tte, pos.key, bestMove, score_to_tt(bestScore, ss->ply), rawEval, depth, bound);
+        ss->hadRep = bestRep;
+        if (!(SP_NoDrawTT && std::abs(bestScore) <= 1) && !(SP_RepTT && bestRep)) TT.store(tte, pos.key, bestMove, score_to_tt(bestScore, ss->ply), rawEval, depth, bound);
         if (!inCheck && std::abs(bestScore) < VALUE_MATE_IN_MAX && (bestMove == MOVE_NONE || !(pos.is_capture(bestMove) || is_promo(bestMove))) &&
             ((bestScore > ss->staticEval && bound != BOUND_UPPER) || (bestScore < ss->staticEval && bound != BOUND_LOWER))) {
             int w = std::min(depth + 1, 16);
