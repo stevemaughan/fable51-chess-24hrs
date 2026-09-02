@@ -104,3 +104,6 @@ Start: 2026-09-01T16:16:56-04:00. Deadline: 2026-09-02T16:16:56-04:00.
 - Fix (engine33): root position counts as game history (needs a second repetition), only strictly-in-tree repetitions are 2-fold draws (Stockfish rule). Testing depth 17 vs 13 and 0.3s vs 0.15s now. If confirmed, the whole TM ladder (which was compensating for this) must be re-tuned.
 - Also added options NoDrawTT, CorrHist, RepTwofold for diagnostics.
 - NNUE: nn6 = parity with HCE; nn7 (HL384) training (~epoch 70/120).
+### 01:45 — ROOT CAUSE: 16-bit TT keys
+- With the TT cleared every move, depth 17 beat depth 13 by 84%; with the persisted TT it lost 0-60. Strict threefold and repetition-aware TT stores changed nothing. Widening TT keys to 32 bits (2 entries per 32-byte bucket) fixed it completely: depth 17 vs 13 = 27-0-13 (84%). The 16-bit key false hits (3 per 65536 probes, growing as the table fills within a game) poisoned every long search; all the "less time is better" time-management results were compensating for this.
+- Consequence: time management must be re-tuned (TmDiv 30/50/70 vs 100); NNUE (nn7 HL384 = +47 vs HCE) to be rebuilt on the fixed base.
