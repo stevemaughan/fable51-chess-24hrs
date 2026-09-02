@@ -176,3 +176,7 @@ Start: 2026-09-01T16:16:56-04:00. Deadline: 2026-09-02T16:16:56-04:00.
 ## Hour 29 — 2026-09-02 10:55 (elapsed 18:38)
 - nn12 (HL512) = nn8 (-2, 200 games). nn13 (HL384 trained on rounds 3-6 incl. 2.5M positions from the NNUE engine) = +31 vs nn8 (200 games, 10+0.1); second 200-game sample running to decide. engine52f (nn13 final candidate) pre-built.
 - final/ still engine49f (nn8).
+## Hour 30 — 2026-09-02 11:15 (elapsed 18:58)
+- nn13 second sample: +31 again (54.5%) → +31 ±26 over 400 games at 10+0.1. Adopted: final/ = engine52f (commit e778dd3): NNUE nn13 (HL384), fixed TT, TmDiv 20, MoveOverhead 50, clock fallback. Compliance passed; static (KERNEL32/msvcrt only).
+- Sanity gauntlets of the installed binary vs stash-33 and stash-30 (100 games each) running. Estimated ~3270-3290 Elo.
+- Plan: no further engine changes unless the sanity runs reveal a problem; final verification checklist at 15:15.
