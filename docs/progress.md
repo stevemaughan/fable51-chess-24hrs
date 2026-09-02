@@ -200,3 +200,6 @@ Start: 2026-09-01T16:16:56-04:00. Deadline: 2026-09-02T16:16:56-04:00.
 ## Hour 36 — 2026-09-02 14:00 (elapsed 21:43)
 - Final frozen (engine54f). Calibration so far: stash-30 69% (200), stash-33 ~44% (300, one more 200-game sample running), stash-37 23.5% (200). No time losses in 900 games. Waiting out the clock; README after 16:17.
 - 14:02: stash-33 third sample 47.75% (200) → 45.2% over 500 games (-33 Elo → ~3253). No time losses (1100 games total on the final binary).
+## Hour 37 — 2026-09-02 14:25 (elapsed 22:08)
+- stash-33 fourth sample: 46.3% (300) → 45.6% over 800 games (-31 Elo → ~3255). Final calibration of engine54f at 10+0.1 / Hash 256: stash-30 69% (200), stash-33 45.6% (800), stash-37 23.5% (200); 1400 games, 0 time forfeits, 0 crashes, 0 illegal moves.
+- Final estimate: ~3250 Elo (CCRL blitz scale), ±30. No further changes; waiting for the deadline (16:16:56), then README.
