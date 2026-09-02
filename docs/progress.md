@@ -173,3 +173,6 @@ Start: 2026-09-01T16:16:56-04:00. Deadline: 2026-09-02T16:16:56-04:00.
 ## Hour 28 — 2026-09-02 10:15 (elapsed 17:58)
 - final/ unchanged (engine49f). nn12 (HL512, val 0.001877; accumulator check exact) playing nn8 at 10+0.1 (33/200). nn13 (HL384 on rounds 3-6 incl. NNUE-engine data, val 0.00179 at epoch 82) finishing, then its 200-game test.
 - Decision rule unchanged; hard stop for changes 15:15.
+## Hour 29 — 2026-09-02 10:55 (elapsed 18:38)
+- nn12 (HL512) = nn8 (-2, 200 games). nn13 (HL384 trained on rounds 3-6 incl. 2.5M positions from the NNUE engine) = +31 vs nn8 (200 games, 10+0.1); second 200-game sample running to decide. engine52f (nn13 final candidate) pre-built.
+- final/ still engine49f (nn8).
