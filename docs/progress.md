@@ -116,3 +116,5 @@ Start: 2026-09-01T16:16:56-04:00. Deadline: 2026-09-02T16:16:56-04:00.
 - engine37f (fixed TT, TmDiv 100) vs stash-25: 60% (+70) → ~3000 Elo. Installed, then replaced by engine39f = TmDiv 30 (self-play +168 vs 100 at 10+0.1). TmDiv 20 vs 30: +61 (80 games) → ladder around 20 queued (15, 24, HardPct 25, IncPct 100).
 - Revert tests on fixed base (5+0.05, 150 games): LmrDiv 240 vs 200 +19 (noise), FutMargin 100 vs 220 +30 (mild; the aggressive futility likely compensated the bug). Remaining: RfpMargin 75, QsDelta 200, SingMargin 2.
 - nn8 (HL384, lambda 0, 12.2M positions incl. dg4) training at normal priority; datagen round 5 (fixed engine) running at low priority.
+### 02:30 — after TM re-tune on fixed TT
+- engine40f (TmDiv 30, TmStopPct 100, 32-bit TT) vs stash-25: 81% (+252, 100 games at 10+0.1). Installed (commit a9294d5). StopPct 80 vs 60 +61, 100 vs 60 +112; TmDiv 40 vs 30 -22; TmDiv 20 vs 30 +61 (Stop 60 base). SingMargin 2 vs 3: -21 (keep 3).
