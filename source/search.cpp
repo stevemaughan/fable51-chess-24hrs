@@ -9,9 +9,9 @@
 
 TranspositionTable TT;
 int MoveOverhead = 40;
-int SP_LmrBase = 80, SP_LmrDiv = 200, SP_RfpMargin = 75, SP_RfpImproving = 50, SP_RazorMargin = 200, SP_NmpBase = 3, SP_NmpDiv = 3, SP_NmpEvalDiv = 200,
-    SP_ProbcutMargin = 180, SP_LmpBase = 3, SP_FutBase = 120, SP_FutMargin = 160, SP_HistPrune = 3000, SP_SeeQuiet = 40, SP_SeeCapt = 100, SP_SingMargin = 2,
-    SP_HistDiv = 6000, SP_AspDelta = 20, SP_RfpDepth = 8, SP_LmpDepth = 8, SP_FutDepth = 8, SP_HistBonusQ = 16, SP_HistBonusL = 80, SP_HistMax = 2000, SP_NodeTm = 1, SP_SingDouble = 20, SP_LmrCaptPct = 50, SP_QsDelta = 200, SP_TmDiv = 24, SP_TmIncPct = 75, SP_TmHardPct = 33, SP_TmHardMul = 4;
+int SP_LmrBase = 80, SP_LmrDiv = 200, SP_RfpMargin = 60, SP_RfpImproving = 50, SP_RazorMargin = 200, SP_NmpBase = 3, SP_NmpDiv = 3, SP_NmpEvalDiv = 200,
+    SP_ProbcutMargin = 180, SP_LmpBase = 3, SP_FutBase = 120, SP_FutMargin = 220, SP_HistPrune = 3000, SP_SeeQuiet = 40, SP_SeeCapt = 100, SP_SingMargin = 3,
+    SP_HistDiv = 6000, SP_AspDelta = 20, SP_RfpDepth = 8, SP_LmpDepth = 8, SP_FutDepth = 8, SP_HistBonusQ = 16, SP_HistBonusL = 80, SP_HistMax = 2000, SP_NodeTm = 1, SP_SingDouble = 20, SP_LmrCaptPct = 50, SP_QsDelta = 120, SP_TmDiv = 24, SP_TmIncPct = 75, SP_TmHardPct = 33, SP_TmHardMul = 4;
 SParam SParams[] = {
     {"LmrBase", &SP_LmrBase}, {"LmrDiv", &SP_LmrDiv}, {"RfpMargin", &SP_RfpMargin}, {"RfpImproving", &SP_RfpImproving}, {"RazorMargin", &SP_RazorMargin},
     {"NmpBase", &SP_NmpBase}, {"NmpDiv", &SP_NmpDiv}, {"NmpEvalDiv", &SP_NmpEvalDiv}, {"ProbcutMargin", &SP_ProbcutMargin}, {"LmpBase", &SP_LmpBase},
