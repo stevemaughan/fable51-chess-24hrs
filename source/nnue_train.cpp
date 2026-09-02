@@ -172,6 +172,7 @@ int main(int argc, char** argv) {
             size_t p1 = line.find('|'); if (p1 == std::string::npos) continue;
             size_t p2 = line.find('|', p1 + 1); if (p2 == std::string::npos) continue;
             Position pos; pos.set_fen(line.substr(0, p1));
+            if (!pos.pieces(WHITE, KING) || !pos.pieces(BLACK, KING) || popcount(pos.pieces()) > 32) continue;
             double score = atof(line.c_str() + p1 + 1);   // white POV cp
             double result = atof(line.c_str() + p2 + 1);
             Sample s; s.n = 0; s.stm = (uint8_t)pos.stm;
