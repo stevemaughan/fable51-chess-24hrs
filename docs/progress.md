@@ -58,3 +58,9 @@ Start: 2026-09-01T16:16:56-04:00. Deadline: 2026-09-02T16:16:56-04:00.
 - A/B batch 2 (engine16, 150 games each): RfpMargin 60 +44 (candidate), LmrDiv 170 +12 (neutral). Running: FutMargin 220, LmrCaptPct 30, QsDelta 120, SingMargin 3, SeeQuiet 60, LmrBase 110.
 - gprof unusable under MinGW static; skipped profiling.
 - Next: finish batch, build engine19 with winners, verify at 10+0.1 vs stash-25 (200 games), install; then time-management A/B (TmDiv/TmIncPct) at 10+0.1.
+## Hour 6 — 2026-09-01 21:05 (elapsed 4:48)
+- A/B batch 2 winners: RfpMargin 60 (+44), FutMargin 220 (+49), QsDelta 120 (+68), SingMargin 3 (+58); neutral: LmrDiv 170, SeeQuiet 60, LmrBase 110; rejected: LmrCaptPct 30 (-44).
+- engine19 (all winners) vs engine16: +92 (200 games, 5+0.05).
+- Gauntlet at 10+0.1 (100 games each, same openings): engine13f: 54% vs stash-21, 31% vs stash-25, 13% vs stash-30. engine19f: 69.5% vs stash-21 (in progress vs 25/30). Earlier 42.5% of engine13f vs stash-25 was noise.
+- final/ = engine19f (commit 0e871b6). Estimated Elo ~2850-2900 (stash-21 +143, stash-25 -96).
+- Next: A/B batch 3 (FutMargin 300, RfpMargin 45, QsDelta 60, SingMargin 4, LmrCaptPct 70, NmpEvalDiv 150, LmpBase 2, FutDepth 10, RfpDepth 10, HistBonusQ 24), then time-management A/B at 10+0.1.
