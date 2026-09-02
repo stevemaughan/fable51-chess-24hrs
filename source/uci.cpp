@@ -255,6 +255,8 @@ int main(int argc, char** argv) {
             U64 b = p.pieces(); while (b) { int s = pop_lsb(b); NNUE::add_piece(p.acc, p.board[s], s); }
             int diff = 0; for (int k = 0; k < 2; k++) for (int i = 0; i < NN_HL; i++) diff += std::abs(p.acc.v[k][i] - saved.v[k][i]);
             out("nnue incremental diff " + std::to_string(diff) + " eval " + std::to_string(NNUE::evaluate(p.acc, p.stm)));
+        } else if (cmd == "cleartt") { wait_search(); TT.clear();
+        } else if (cmd == "clearhist") { wait_search(); searcher.clear_history();
         } else if (cmd == "eval") {
             out("eval " + std::to_string(Eval::evaluate(searcher.rootPos)));
         }

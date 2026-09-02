@@ -11,13 +11,13 @@ TranspositionTable TT;
 int MoveOverhead = 40;
 int SP_LmrBase = 80, SP_LmrDiv = 200, SP_RfpMargin = 60, SP_RfpImproving = 50, SP_RazorMargin = 200, SP_NmpBase = 3, SP_NmpDiv = 3, SP_NmpEvalDiv = 200,
     SP_ProbcutMargin = 180, SP_LmpBase = 3, SP_FutBase = 120, SP_FutMargin = 220, SP_HistPrune = 3000, SP_SeeQuiet = 40, SP_SeeCapt = 100, SP_SingMargin = 3,
-    SP_HistDiv = 6000, SP_AspDelta = 20, SP_RfpDepth = 8, SP_LmpDepth = 8, SP_FutDepth = 8, SP_HistBonusQ = 16, SP_HistBonusL = 80, SP_HistMax = 2000, SP_NodeTm = 1, SP_SingDouble = 20, SP_LmrCaptPct = 50, SP_QsDelta = 120, SP_TmDiv = 100, SP_TmIncPct = 75, SP_TmHardPct = 33, SP_TmHardMul = 4, SP_IirDepth = 4, SP_NmpMinDepth = 3, SP_LmrPv = 1, SP_CheckExt = 1, SP_ProbcutDepth = 5, SP_RazorDepth = 3, SP_LmrImproving = 1, SP_LmrCut = 1, SP_TmMaxFactor = 216, SP_TmStopPct = 60, SP_NoDrawTT = 1, SP_CorrHist = 1, SP_RepTwofold = 1;
+    SP_HistDiv = 6000, SP_AspDelta = 20, SP_RfpDepth = 8, SP_LmpDepth = 8, SP_FutDepth = 8, SP_HistBonusQ = 16, SP_HistBonusL = 80, SP_HistMax = 2000, SP_NodeTm = 1, SP_SingDouble = 20, SP_LmrCaptPct = 50, SP_QsDelta = 120, SP_TmDiv = 100, SP_TmIncPct = 75, SP_TmHardPct = 33, SP_TmHardMul = 4, SP_IirDepth = 4, SP_NmpMinDepth = 3, SP_LmrPv = 1, SP_CheckExt = 1, SP_ProbcutDepth = 5, SP_RazorDepth = 3, SP_LmrImproving = 1, SP_LmrCut = 1, SP_TmMaxFactor = 216, SP_TmStopPct = 60, SP_NoDrawTT = 1, SP_CorrHist = 1, SP_RepTwofold = 1, SP_ClearTT = 0;
 SParam SParams[] = {
     {"LmrBase", &SP_LmrBase}, {"LmrDiv", &SP_LmrDiv}, {"RfpMargin", &SP_RfpMargin}, {"RfpImproving", &SP_RfpImproving}, {"RazorMargin", &SP_RazorMargin},
     {"NmpBase", &SP_NmpBase}, {"NmpDiv", &SP_NmpDiv}, {"NmpEvalDiv", &SP_NmpEvalDiv}, {"ProbcutMargin", &SP_ProbcutMargin}, {"LmpBase", &SP_LmpBase},
     {"FutBase", &SP_FutBase}, {"FutMargin", &SP_FutMargin}, {"HistPrune", &SP_HistPrune}, {"SeeQuiet", &SP_SeeQuiet}, {"SeeCapt", &SP_SeeCapt},
     {"SingMargin", &SP_SingMargin}, {"HistDiv", &SP_HistDiv}, {"AspDelta", &SP_AspDelta}, {"RfpDepth", &SP_RfpDepth}, {"LmpDepth", &SP_LmpDepth},
-    {"FutDepth", &SP_FutDepth}, {"HistBonusQ", &SP_HistBonusQ}, {"HistBonusL", &SP_HistBonusL}, {"HistMax", &SP_HistMax}, {"NodeTm", &SP_NodeTm}, {"SingDouble", &SP_SingDouble}, {"LmrCaptPct", &SP_LmrCaptPct}, {"QsDelta", &SP_QsDelta}, {"TmDiv", &SP_TmDiv}, {"TmIncPct", &SP_TmIncPct}, {"TmHardPct", &SP_TmHardPct}, {"TmHardMul", &SP_TmHardMul}, {"IirDepth", &SP_IirDepth}, {"NmpMinDepth", &SP_NmpMinDepth}, {"LmrPv", &SP_LmrPv}, {"CheckExt", &SP_CheckExt}, {"ProbcutDepth", &SP_ProbcutDepth}, {"RazorDepth", &SP_RazorDepth}, {"LmrImproving", &SP_LmrImproving}, {"LmrCut", &SP_LmrCut}, {"TmMaxFactor", &SP_TmMaxFactor}, {"TmStopPct", &SP_TmStopPct}, {"NoDrawTT", &SP_NoDrawTT}, {"CorrHist", &SP_CorrHist}, {"RepTwofold", &SP_RepTwofold},
+    {"FutDepth", &SP_FutDepth}, {"HistBonusQ", &SP_HistBonusQ}, {"HistBonusL", &SP_HistBonusL}, {"HistMax", &SP_HistMax}, {"NodeTm", &SP_NodeTm}, {"SingDouble", &SP_SingDouble}, {"LmrCaptPct", &SP_LmrCaptPct}, {"QsDelta", &SP_QsDelta}, {"TmDiv", &SP_TmDiv}, {"TmIncPct", &SP_TmIncPct}, {"TmHardPct", &SP_TmHardPct}, {"TmHardMul", &SP_TmHardMul}, {"IirDepth", &SP_IirDepth}, {"NmpMinDepth", &SP_NmpMinDepth}, {"LmrPv", &SP_LmrPv}, {"CheckExt", &SP_CheckExt}, {"ProbcutDepth", &SP_ProbcutDepth}, {"RazorDepth", &SP_RazorDepth}, {"LmrImproving", &SP_LmrImproving}, {"LmrCut", &SP_LmrCut}, {"TmMaxFactor", &SP_TmMaxFactor}, {"TmStopPct", &SP_TmStopPct}, {"NoDrawTT", &SP_NoDrawTT}, {"CorrHist", &SP_CorrHist}, {"RepTwofold", &SP_RepTwofold}, {"ClearTT", &SP_ClearTT},
 };
 int SParamCount = sizeof(SParams) / sizeof(SParams[0]);
 static int lmrTableG[64][64];
@@ -591,6 +591,7 @@ void Searcher::start() {
     nodes = 0;
     selDepth = 0;
     set_time_limits();
+    if (SP_ClearTT) TT.clear();
     TT.new_search();
 
     Stack* ss = stackBuf + 4;
