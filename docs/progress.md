@@ -133,3 +133,8 @@ Start: 2026-09-01T16:16:56-04:00. Deadline: 2026-09-02T16:16:56-04:00.
 - A/B on fixed base (5+0.05, 150 games): AspDelta 10 +23, 40 -47; LmrDiv 240 -9, 170 -30; NmpBase 4 +14 → all defaults kept. Remaining: HistPrune 5000, LmpBase 5, FutDepth 10.
 - final/ = engine41f (commit 2496fd4). Re-calibration vs stash-30/33 running.
 - nn8 at epoch ~95/120 (→ match vs engine41 chained); datagen 5 at ~75% (→ Texel round 3 chained).
+## Hour 19 — 2026-09-02 04:50 (elapsed 12:33)
+- final/ = engine41f (TmDiv 20): 59% vs stash-30, 40.5% vs stash-33 → ~3220 Elo. No time losses; min clock 0.25 s in 100 games → MoveOverhead raised to 50 ms for the next build.
+- A/B batch on fixed base finished: all within noise (HistPrune 5000 -16, LmpBase 5 -7, FutDepth 10 +12, NmpBase 4 +14) → defaults kept.
+- NNUE: nn8 (12.2M positions) = +10 vs HCE at 5+0.05; 10+0.1 test running. nn9 (15.2M incl. round 5) training. Texel round 3 (dg5, fixed engine) done → engine43 vs engine41 running.
+- Final phase plan: from ~13:30 build PGO final, verify (compliance, 100-game sanity vs stash-30 at 10+0.1), install by ~15:30.
