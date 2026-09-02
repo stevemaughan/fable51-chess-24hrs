@@ -82,3 +82,9 @@ Start: 2026-09-01T16:16:56-04:00. Deadline: 2026-09-02T16:16:56-04:00.
 - final/ = engine25f: TmDiv 100 (t/100 + 0.75·inc ≈ 175 ms/move at start). Added TmMaxFactor option (engine25) to test capping the factors so the base allocation can grow again.
 - NNUE: nn4 (HL 256, lambda 0.2) training slowly under load (epoch ~60/100). Datagen round 3 finishing (2.9k/3k games per proc); nn5 (all data, ~8M) queued.
 - Next: TmDiv 120, NodeTm interaction, TmMaxFactor 120/100 tests; search-knob batch; re-gauntlet vs Stash with the new TM.
+## Hour 10 — 2026-09-01 23:55 (elapsed 7:38)
+- TM ladder continued: TmDiv 100 vs 80 +89; 120 vs 80 +76; 140 vs 100 +89. Factor caps: TmMaxFactor 120 +26, 100 -26; TmDiv 60+cap -92; TmHardMul 2 +12. NodeTm=0 -111 (keep). Fixed movetime 0.2s beats 0.1s by ~50 → no deep-search bug; the allocation logic (iteration overshoot × stacked factors) is what wastes time. Added TmStopPct (don't start an iteration late) — testing 60/40.
+- "depth 1" moves were forced single-move positions, not time trouble (earlier diagnosis corrected).
+- final/ = engine25f (TmDiv 100).
+- NNUE: with a fair opponent (same source/TM) nn4 (HL256, lambda 0.2) = -95, nn5 (lambda 0.5, 8.2M pos) = -230. Score-weighted targets matter: nn6 (lambda 0.0, 8.2M) training. Datagen round 4 running (low priority).
+- Search-knob batch (engine25, 5+0.05) running.
