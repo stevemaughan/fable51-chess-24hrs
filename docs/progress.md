@@ -183,3 +183,6 @@ Start: 2026-09-01T16:16:56-04:00. Deadline: 2026-09-02T16:16:56-04:00.
 ## Hour 31 — 2026-09-02 11:30 (elapsed 19:13)
 - Installed final (engine52f, nn13) sanity: 45.5% vs stash-33, 66% vs stash-30 (100 games each, 10+0.1, Hash 256), no time losses → est. ~3270 Elo.
 - Last iteration: datagen round 7 with the nn13 engine (10 procs × 2200 games, ~27% done) → nn14 trained on rounds 4-7 → 200-game test vs nn13; adopt only if ≥ +25 and a clean sanity run; expected by ~13:15. Otherwise final/ stays engine52f.
+## Hour 32 — 2026-09-02 12:00 (elapsed 19:43)
+- Datagen round 7 done (2.2M positions from the nn13 engine). nn14 training on rounds 4-7 (~10M positions, 10 threads, 10 s/epoch) → chained 200-game test vs nn13 at 10+0.1 (~12:40).
+- final/ = engine52f (nn13), verified. No other work in flight.
