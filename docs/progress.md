@@ -180,3 +180,6 @@ Start: 2026-09-01T16:16:56-04:00. Deadline: 2026-09-02T16:16:56-04:00.
 - nn13 second sample: +31 again (54.5%) → +31 ±26 over 400 games at 10+0.1. Adopted: final/ = engine52f (commit e778dd3): NNUE nn13 (HL384), fixed TT, TmDiv 20, MoveOverhead 50, clock fallback. Compliance passed; static (KERNEL32/msvcrt only).
 - Sanity gauntlets of the installed binary vs stash-33 and stash-30 (100 games each) running. Estimated ~3270-3290 Elo.
 - Plan: no further engine changes unless the sanity runs reveal a problem; final verification checklist at 15:15.
+## Hour 31 — 2026-09-02 11:30 (elapsed 19:13)
+- Installed final (engine52f, nn13) sanity: 45.5% vs stash-33, 66% vs stash-30 (100 games each, 10+0.1, Hash 256), no time losses → est. ~3270 Elo.
+- Last iteration: datagen round 7 with the nn13 engine (10 procs × 2200 games, ~27% done) → nn14 trained on rounds 4-7 → 200-game test vs nn13; adopt only if ≥ +25 and a clean sanity run; expected by ~13:15. Otherwise final/ stays engine52f.
