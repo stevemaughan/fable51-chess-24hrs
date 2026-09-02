@@ -126,7 +126,8 @@ bool Searcher::is_repetition(const Position& pos, int ply) const {
             k = gameKeys[gi];
         }
         if (k == pos.key) {
-            if (i >= 0 && SP_RepTwofold) return true;      // repetition inside search tree: treat as draw
+            if (i > 0 && SP_RepTwofold) return true;      // repetition strictly inside the search tree (after root): draw
+            // the root position itself counts like game history (needs a second repetition)
             if (++count >= 2) return true; // two prior occurrences in game history = threefold
         }
         i -= 2;
