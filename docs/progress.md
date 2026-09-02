@@ -142,3 +142,6 @@ Start: 2026-09-01T16:16:56-04:00. Deadline: 2026-09-02T16:16:56-04:00.
 - final/ = engine41f (~3220). Texel round 3 neutral (+2); staged move picker on fixed TT neutral (-9) → reverted; all search-knob A/B neutral → defaults final.
 - NNUE nn8 vs HCE at 10+0.1: +40 (200 games); vs stash-30 56% / stash-33 44.5% (HCE 59% / 40.5%) → equal within noise. nn9 (15.2M positions, val 0.00191) vs nn8 at 10+0.1 running.
 - MoveOverhead 50 ms in source (not yet in final/). Decision pending: ship HCE (engine41f + overhead 50) or NNUE (if nn9/nn8 show a clear edge vs Stash in a larger test).
+## Hour 21 — 2026-09-02 06:10 (elapsed 13:53)
+- Paired 200-game samples vs stash-30 (10+0.1, same openings): NNUE nn8 61% (+78), HCE engine41f 56.75% (+47). Earlier 100-game samples: nn8 56%/44.5% vs stash-30/33, HCE 59%/40.5%. Direct nn8 vs HCE at 10+0.1: +40 (200 games); second sample running. nn9 (15M) = nn8 (-5).
+- engine47f built: NNUE nn8 (HL384) + fixed TT + TmDiv 20 + MoveOverhead 50, options hidden except Hash/MoveOverhead/Threads/UseNNUE. To be installed after the second direct sample.
