@@ -190,3 +190,8 @@ Start: 2026-09-01T16:16:56-04:00. Deadline: 2026-09-02T16:16:56-04:00.
 - nn14 (HL384, rounds 4-7 incl. 2.2M positions from the nn13 engine, val 0.00162) vs nn13: +53 (57.5%, 200 games at 10+0.1). Second 200-game sample running; if combined ≥ +25, engine54f (pre-built, nn14) replaces final/ after a stash-33 sanity run. Deadline for changes 15:15.
 ## Hour 34 — 2026-09-02 13:10 (elapsed 20:53)
 - nn14 second sample +16 → +34 over 400 games vs nn13; installed as engine54f (commit a07e6a0). BUT sanity vs Stash: 36% vs stash-33, 60.5% vs stash-30 (nn13 had 45.5% / 66%) — the self-play gain may not transfer (trained on its parent's games). Paired 200-game tests of nn14 and nn13 vs stash-33 with identical openings running; final/ goes to whichever is better against Stash. Decision by ~13:40, then no further changes.
+## Hour 35 — 2026-09-02 13:30 (elapsed 21:13) — FINAL BUILD FROZEN
+- Paired 200-game samples vs stash-33 (same openings): nn14 47.25%, nn13 44.25%; over 300 games each 43.5% vs 44.7% (equal). Head-to-head nn14 +34 (400 games). Decision: keep nn14 → final/ = engine54f (commit a07e6a0), md5 954834cd01dc.
+- Final verification: compliance passed; runs with PATH=C:\Windows\System32 only (imports KERNEL32.dll, msvcrt.dll only); perft startpos d5 = 4865609 and kiwipete d4 = 4085603 exact; `uci` reports "Fable 5.1 chess 24hrs" / "Fable 5.1"; options Hash, MoveOverhead(50), Threads(1), UseNNUE(true).
+- Estimated strength: ~3250 Elo (CCRL-blitz anchors: stash-30 60-66%, stash-33 43-48%, stash-37 25%).
+- No further engine changes. Remaining time used only for extra calibration games for the README.
