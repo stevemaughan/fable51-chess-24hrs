@@ -138,3 +138,7 @@ Start: 2026-09-01T16:16:56-04:00. Deadline: 2026-09-02T16:16:56-04:00.
 - A/B batch on fixed base finished: all within noise (HistPrune 5000 -16, LmpBase 5 -7, FutDepth 10 +12, NmpBase 4 +14) → defaults kept.
 - NNUE: nn8 (12.2M positions) = +10 vs HCE at 5+0.05; 10+0.1 test running. nn9 (15.2M incl. round 5) training. Texel round 3 (dg5, fixed engine) done → engine43 vs engine41 running.
 - Final phase plan: from ~13:30 build PGO final, verify (compliance, 100-game sanity vs stash-30 at 10+0.1), install by ~15:30.
+## Hour 20 — 2026-09-02 05:45 (elapsed 13:28)
+- final/ = engine41f (~3220). Texel round 3 neutral (+2); staged move picker on fixed TT neutral (-9) → reverted; all search-knob A/B neutral → defaults final.
+- NNUE nn8 vs HCE at 10+0.1: +40 (200 games); vs stash-30 56% / stash-33 44.5% (HCE 59% / 40.5%) → equal within noise. nn9 (15.2M positions, val 0.00191) vs nn8 at 10+0.1 running.
+- MoveOverhead 50 ms in source (not yet in final/). Decision pending: ship HCE (engine41f + overhead 50) or NNUE (if nn9/nn8 show a clear edge vs Stash in a larger test).
