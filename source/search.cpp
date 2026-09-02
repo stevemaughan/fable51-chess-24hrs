@@ -265,6 +265,7 @@ int Searcher::qsearch(Position& pos, int alpha, int beta, Stack* ss) {
     gen_moves(pos, ml, inCheck ? GEN_ALL : GEN_NOISY);
     score_moves(*this, pos, ml, ttMove, ss);
     Move bestMove = MOVE_NONE;
+    bool bestRep = false;
     int moveCount = 0;
     Position next;
     for (int i = 0; i < ml.size(); i++) {
