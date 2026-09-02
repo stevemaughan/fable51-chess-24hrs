@@ -145,6 +145,7 @@ void Searcher::set_time_limits() {
     useTime = false;
     int mytime = rootPos.stm == WHITE ? limits.wtime : limits.btime;
     int myinc = rootPos.stm == WHITE ? limits.winc : limits.binc;
+    if (mytime <= 0 && (limits.wtime > 0 || limits.btime > 0)) { mytime = std::max(limits.wtime, limits.btime); myinc = std::max(limits.winc, limits.binc); }
     if (limits.movetime > 0) {
         useTime = true;
         softLimit = hardLimit = std::max(1, limits.movetime - MoveOverhead);
