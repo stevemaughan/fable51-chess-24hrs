@@ -205,3 +205,5 @@ Start: 2026-09-01T16:16:56-04:00. Deadline: 2026-09-02T16:16:56-04:00.
 - Final estimate: ~3250 Elo (CCRL blitz scale), ±30. No further changes; waiting for the deadline (16:16:56), then README.
 ## Hour 38 — 2026-09-02 15:17 (elapsed 23:00)
 - No changes since 13:30. final/ = engine54f (md5 954834cd01dc…), README.md written and committed (72442c5). Waiting for the deadline at 16:16:56.
+## Deadline — 2026-09-02 16:17 (elapsed 24:00)
+- Run complete. final/Fable51chess24hrs.exe = engine54f (NNUE nn14, fixed TT, TmDiv 20, MoveOverhead 50), md5 954834cd01dc…, unchanged since 12:50, verified 13:30. README.md written after the build was frozen. Estimated ~3250 Elo.
