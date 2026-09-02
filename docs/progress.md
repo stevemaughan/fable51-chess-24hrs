@@ -77,3 +77,8 @@ Start: 2026-09-01T16:16:56-04:00. Deadline: 2026-09-02T16:16:56-04:00.
 ### 22:40 — time management bug found (big)
 - At 10+0.1 self-play: TmDiv 32 = +130, TmDiv 45 = +264, TmDiv 60 = +366 (89%) vs the old t/24. Cause: hard limit t/3 × stacked extension factors (score-drop 1.6 × node-fraction 1.35) let the engine spend 1-2 s on a few moves, then it played 211 moves at depth 1 in time trouble (new side: 35). No time forfeits either way.
 - final/ = engine23f with TmDiv 60 (commit 937add3). Batch running vs this base: TmHardPct 12, TmDiv 45/32 + TmHardPct 12, TmDiv 80, TmHardMul 2.
+## Hour 9 — 2026-09-01 23:10 (elapsed 6:53)
+- Time-management ladder at 10+0.1 (120 games each, self-play): TmDiv 32 +130, 45 +264, 60 +366 (vs 24); 80 +64 vs 60; 100 +89 vs 80. Hard-limit variants neutral (TmHardMul 2: -12; TmHardPct 12: -29). TmDiv 32 + HardPct 12 = -250 vs 60 (181 depth-1 moves: time trouble). Cause is the stacked soft-limit factors (score-drop ×1.6, node-fraction ×1.35) plus finishing the running iteration.
+- final/ = engine25f: TmDiv 100 (t/100 + 0.75·inc ≈ 175 ms/move at start). Added TmMaxFactor option (engine25) to test capping the factors so the base allocation can grow again.
+- NNUE: nn4 (HL 256, lambda 0.2) training slowly under load (epoch ~60/100). Datagen round 3 finishing (2.9k/3k games per proc); nn5 (all data, ~8M) queued.
+- Next: TmDiv 120, NodeTm interaction, TmMaxFactor 120/100 tests; search-knob batch; re-gauntlet vs Stash with the new TM.
