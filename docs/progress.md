@@ -154,3 +154,8 @@ Start: 2026-09-01T16:16:56-04:00. Deadline: 2026-09-02T16:16:56-04:00.
 - final/ = engine47f (NNUE nn8). NNUE margin batch (5+0.05, 150 games each): LmrDiv 240 +54 (candidate, verifying at 10+0.1 with 200 games), NmpEvalDiv 150 +33, RfpMargin 45 +21, others neutral (FutMargin 150/300, RfpMargin 80, QsDelta 200, SingMargin 2).
 - nn11 (200-epoch schedule) at epoch ~160; chained 200-game test vs nn8 at 10+0.1.
 - Final build script ready (build_final.sh: PGO + NNUE + hidden options + DLL check).
+## Hour 24 — 2026-09-02 08:30 (elapsed 16:13)
+- final/ = engine47f (NNUE nn8): vs stash-33 200 games 48.5% (-10); with the earlier 100 games 46.2% over 300 → est. ~3260 Elo. Stress test under load (conc 8 + other jobs): 54% vs stash-30, 0 time losses.
+- NNUE margin knobs: LmrDiv 240 was +54 at 5+0.05 but -14 at 10+0.1 (200 games) → not adopted; LmrDiv 280 -30; combined 240+NmpEvalDiv150 +16 → search defaults final.
+- PGO build (build_final.sh) is node-identical but measured slower under load; to be re-measured on a quiet machine before deciding.
+- nn11 (200-epoch) match vs nn8 at 10+0.1 running.
