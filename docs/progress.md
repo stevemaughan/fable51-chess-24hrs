@@ -159,3 +159,7 @@ Start: 2026-09-01T16:16:56-04:00. Deadline: 2026-09-02T16:16:56-04:00.
 - NNUE margin knobs: LmrDiv 240 was +54 at 5+0.05 but -14 at 10+0.1 (200 games) → not adopted; LmrDiv 280 -30; combined 240+NmpEvalDiv150 +16 → search defaults final.
 - PGO build (build_final.sh) is node-identical but measured slower under load; to be re-measured on a quiet machine before deciding.
 - nn11 (200-epoch) match vs nn8 at 10+0.1 running.
+## Hour 25 — 2026-09-02 08:45 (elapsed 16:28)
+- final/ = engine49f (commit aeb126b): NNUE nn8, fixed TT, TmDiv 20, MoveOverhead 50, clock fallback if own clock missing. Est. ~3260 Elo (48.5% vs stash-33 over 200 games; 61% vs stash-30 over 200).
+- nn11 = nn8 (-9); PGO ~10% slower (rejected); compiler flags: -O3 -flto -mtune=znver4 fastest (generic -3%, -O2 -12%, no-LTO -5%).
+- Remaining time (7.5 h): datagen round 6 with the NNUE engine (fresh labels), HL512 net training (nn12) on 15M positions. Any candidate must beat nn8 by a clear margin in a 200-game 10+0.1 match to replace final/. Hard stop for changes: 15:15; final verification 15:15-16:00.
