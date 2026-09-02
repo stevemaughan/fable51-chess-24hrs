@@ -88,3 +88,8 @@ Start: 2026-09-01T16:16:56-04:00. Deadline: 2026-09-02T16:16:56-04:00.
 - final/ = engine25f (TmDiv 100).
 - NNUE: with a fair opponent (same source/TM) nn4 (HL256, lambda 0.2) = -95, nn5 (lambda 0.5, 8.2M pos) = -230. Score-weighted targets matter: nn6 (lambda 0.0, 8.2M) training. Datagen round 4 running (low priority).
 - Search-knob batch (engine25, 5+0.05) running.
+## Hour 11 — 2026-09-02 00:20 (elapsed 8:03)
+- final/ = engine27f (TmDiv 100 + TmStopPct 60). Gauntlet 10+0.1 (100 games each, same openings as before): 45% vs stash-25 (was 31%), 20% vs stash-30 (was 11.5%) → est. ~2910 Elo.
+- TmStopPct 40 +58, 60 +101 (adopted); TmDiv 60+Stop 50 +58. Search-knob batch (10 tests): nothing adopted (LmrImproving=0 -85, LmrPv=0 -28, IirDepth 6 -37, rest neutral).
+- NNUE nn6 (HL256, lambda 0.0, 8.2M positions) trained (val 0.00159 on score-only target); fair match vs HCE running. nn4 (lambda 0.2) was -95, nn5 (0.5) -230 → lambda toward search scores helps.
+- Next: TM refinements (TmDiv 70/140, StopPct 75 with base Stop 60), NNUE decision, PGO build test when CPU frees.
