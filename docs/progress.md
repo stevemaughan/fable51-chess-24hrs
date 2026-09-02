@@ -128,3 +128,8 @@ Start: 2026-09-01T16:16:56-04:00. Deadline: 2026-09-02T16:16:56-04:00.
 - Ladder (Stop 100 base TmDiv 30): TmDiv 20 +48, 15 +30, 24 +30, 40 -35; MaxFactor 150 +39; HardPct 25 running. Next TM batch on TmDiv 20 base: MaxFactor 150/120, IncPct 100/50, TmDiv 16.
 - A/B batch on fixed base (AspDelta, LmrDiv, NmpBase, HistPrune, LmpBase, FutDepth) running at 5+0.05.
 - nn8 (HL384, 12.2M) epoch ~55/120; datagen round 5 → Texel tuning round 3 chained.
+## Hour 18 — 2026-09-02 03:55 (elapsed 11:38)
+- TM finalized on the fixed base: TmDiv 20 (t/20 + 0.75·inc), StopPct 100, MaxFactor 216, HardPct 33 (TmDiv 16 -4, IncPct 50/100 neutral, MaxFactor 150/120 neutral, HardPct 25 neutral).
+- A/B on fixed base (5+0.05, 150 games): AspDelta 10 +23, 40 -47; LmrDiv 240 -9, 170 -30; NmpBase 4 +14 → all defaults kept. Remaining: HistPrune 5000, LmpBase 5, FutDepth 10.
+- final/ = engine41f (commit 2496fd4). Re-calibration vs stash-30/33 running.
+- nn8 at epoch ~95/120 (→ match vs engine41 chained); datagen 5 at ~75% (→ Texel round 3 chained).
