@@ -166,3 +166,5 @@ Start: 2026-09-01T16:16:56-04:00. Deadline: 2026-09-02T16:16:56-04:00.
 ## Hour 26 — 2026-09-02 09:15 (elapsed 16:58)
 - final/ = engine49f (unchanged). Background: nn12 (HL512, 15M positions) training (~epoch 40/120, 45 s/epoch) → chained 200-game test vs nn8 at 10+0.1; datagen round 6 with the NNUE engine (~25%) → chained nn13 training on rounds 3-6.
 - No other experiments running; all search/TM/eval knobs are final. Hard stop for changes 15:15.
+### 09:15 — ladder complete for final/ (engine49f, 10+0.1, Hash 256)
+- vs stash-30 (3166): 61% (200) and 54% (80, loaded); vs stash-33 (3286): 41.5% (100) + 48.5% (200); vs stash-37 (3424): 25.5% (100). No time losses in any. Estimate ~3250 Elo (CCRL-blitz-anchored, ±40).
