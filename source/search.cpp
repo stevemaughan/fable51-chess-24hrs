@@ -11,13 +11,13 @@ TranspositionTable TT;
 int MoveOverhead = 40;
 int SP_LmrBase = 80, SP_LmrDiv = 200, SP_RfpMargin = 60, SP_RfpImproving = 50, SP_RazorMargin = 200, SP_NmpBase = 3, SP_NmpDiv = 3, SP_NmpEvalDiv = 200,
     SP_ProbcutMargin = 180, SP_LmpBase = 3, SP_FutBase = 120, SP_FutMargin = 220, SP_HistPrune = 3000, SP_SeeQuiet = 40, SP_SeeCapt = 100, SP_SingMargin = 3,
-    SP_HistDiv = 6000, SP_AspDelta = 20, SP_RfpDepth = 8, SP_LmpDepth = 8, SP_FutDepth = 8, SP_HistBonusQ = 16, SP_HistBonusL = 80, SP_HistMax = 2000, SP_NodeTm = 1, SP_SingDouble = 20, SP_LmrCaptPct = 50, SP_QsDelta = 120, SP_TmDiv = 24, SP_TmIncPct = 75, SP_TmHardPct = 33, SP_TmHardMul = 4;
+    SP_HistDiv = 6000, SP_AspDelta = 20, SP_RfpDepth = 8, SP_LmpDepth = 8, SP_FutDepth = 8, SP_HistBonusQ = 16, SP_HistBonusL = 80, SP_HistMax = 2000, SP_NodeTm = 1, SP_SingDouble = 20, SP_LmrCaptPct = 50, SP_QsDelta = 120, SP_TmDiv = 24, SP_TmIncPct = 75, SP_TmHardPct = 33, SP_TmHardMul = 4, SP_IirDepth = 4, SP_NmpMinDepth = 3, SP_LmrPv = 1, SP_CheckExt = 1, SP_ProbcutDepth = 5, SP_RazorDepth = 3, SP_LmrImproving = 1, SP_LmrCut = 1;
 SParam SParams[] = {
     {"LmrBase", &SP_LmrBase}, {"LmrDiv", &SP_LmrDiv}, {"RfpMargin", &SP_RfpMargin}, {"RfpImproving", &SP_RfpImproving}, {"RazorMargin", &SP_RazorMargin},
     {"NmpBase", &SP_NmpBase}, {"NmpDiv", &SP_NmpDiv}, {"NmpEvalDiv", &SP_NmpEvalDiv}, {"ProbcutMargin", &SP_ProbcutMargin}, {"LmpBase", &SP_LmpBase},
     {"FutBase", &SP_FutBase}, {"FutMargin", &SP_FutMargin}, {"HistPrune", &SP_HistPrune}, {"SeeQuiet", &SP_SeeQuiet}, {"SeeCapt", &SP_SeeCapt},
     {"SingMargin", &SP_SingMargin}, {"HistDiv", &SP_HistDiv}, {"AspDelta", &SP_AspDelta}, {"RfpDepth", &SP_RfpDepth}, {"LmpDepth", &SP_LmpDepth},
-    {"FutDepth", &SP_FutDepth}, {"HistBonusQ", &SP_HistBonusQ}, {"HistBonusL", &SP_HistBonusL}, {"HistMax", &SP_HistMax}, {"NodeTm", &SP_NodeTm}, {"SingDouble", &SP_SingDouble}, {"LmrCaptPct", &SP_LmrCaptPct}, {"QsDelta", &SP_QsDelta}, {"TmDiv", &SP_TmDiv}, {"TmIncPct", &SP_TmIncPct}, {"TmHardPct", &SP_TmHardPct}, {"TmHardMul", &SP_TmHardMul},
+    {"FutDepth", &SP_FutDepth}, {"HistBonusQ", &SP_HistBonusQ}, {"HistBonusL", &SP_HistBonusL}, {"HistMax", &SP_HistMax}, {"NodeTm", &SP_NodeTm}, {"SingDouble", &SP_SingDouble}, {"LmrCaptPct", &SP_LmrCaptPct}, {"QsDelta", &SP_QsDelta}, {"TmDiv", &SP_TmDiv}, {"TmIncPct", &SP_TmIncPct}, {"TmHardPct", &SP_TmHardPct}, {"TmHardMul", &SP_TmHardMul}, {"IirDepth", &SP_IirDepth}, {"NmpMinDepth", &SP_NmpMinDepth}, {"LmrPv", &SP_LmrPv}, {"CheckExt", &SP_CheckExt}, {"ProbcutDepth", &SP_ProbcutDepth}, {"RazorDepth", &SP_RazorDepth}, {"LmrImproving", &SP_LmrImproving}, {"LmrCut", &SP_LmrCut},
 };
 int SParamCount = sizeof(SParams) / sizeof(SParams[0]);
 static int lmrTableG[64][64];
@@ -368,12 +368,12 @@ int Searcher::search(Position& pos, int alpha, int beta, int depth, Stack* ss, b
         if (depth <= SP_RfpDepth && eval < VALUE_MATE_IN_MAX && eval - SP_RfpMargin * depth + (improving ? SP_RfpImproving : 0) >= beta)
             return eval;
         // razoring
-        if (depth <= 3 && eval + SP_RazorMargin * depth <= alpha) {
+        if (depth <= SP_RazorDepth && eval + SP_RazorMargin * depth <= alpha) {
             int v = qsearch(pos, alpha, beta, ss);
             if (v <= alpha) return v;
         }
         // null move pruning
-        if (depth >= 3 && eval >= beta && ss->staticEval >= beta - 20 * depth && (ss - 1)->currentMove != MOVE_NONE && pos.has_non_pawn(pos.stm)) {
+        if (depth >= SP_NmpMinDepth && eval >= beta && ss->staticEval >= beta - 20 * depth && (ss - 1)->currentMove != MOVE_NONE && pos.has_non_pawn(pos.stm)) {
             int R = SP_NmpBase + depth / SP_NmpDiv + std::min((eval - beta) / SP_NmpEvalDiv, 3);
             Position next;
             pos.make_null(next);
@@ -388,7 +388,7 @@ int Searcher::search(Position& pos, int alpha, int beta, int depth, Stack* ss, b
     }
     // probcut
 #ifndef NO_PROBCUT
-    if (!pvNode && !inCheck && !excluded && depth >= 5 && std::abs(beta) < VALUE_MATE_IN_MAX) {
+    if (!pvNode && !inCheck && !excluded && depth >= SP_ProbcutDepth && std::abs(beta) < VALUE_MATE_IN_MAX) {
         int probBeta = beta + SP_ProbcutMargin;
         if (!(ttHit && ttDepth >= depth - 3 && ttScore != VALUE_NONE && ttScore < probBeta)) {
             MoveList pml;
@@ -415,7 +415,7 @@ int Searcher::search(Position& pos, int alpha, int beta, int depth, Stack* ss, b
     }
 #endif
     // internal iterative reduction
-    if (depth >= 4 && ttMove == MOVE_NONE && !excluded) depth--;
+    if (depth >= SP_IirDepth && ttMove == MOVE_NONE && !excluded) depth--;
 
     MoveList ml;
     gen_moves(pos, ml, GEN_ALL);
@@ -482,7 +482,7 @@ int Searcher::search(Position& pos, int alpha, int beta, int depth, Stack* ss, b
         keyStack[ss->ply + 1] = next.key;
         TT.prefetch(next.key);
         bool givesCheck = next.in_check();
-        if (givesCheck && extension == 0 && ss->ply < 2 * rootDepth && see_ge(pos, m, 0)) extension = 1;
+        if (SP_CheckExt && givesCheck && extension == 0 && ss->ply < 2 * rootDepth && see_ge(pos, m, 0)) extension = 1;
 
         ss->currentMove = m;
         ss->movedPiece = pc;
@@ -495,9 +495,9 @@ int Searcher::search(Position& pos, int alpha, int beta, int depth, Stack* ss, b
         if (depth >= 3 && moveCount > 1 + (rootNode ? 1 : 0) && (!isNoisy || !pvNode)) {
             int R = lmrTableG[std::min(depth, 63)][std::min(moveCount, 63)];
             if (!isNoisy) {
-                if (!improving) R++;
-                if (cutNode) R++;
-                if (pvNode) R--;
+                if (!improving) R += SP_LmrImproving;
+                if (cutNode) R += SP_LmrCut;
+                if (pvNode) R -= SP_LmrPv;
                 if (isKillerOrCounter) R--;
                 R -= std::clamp(hist / SP_HistDiv, -2, 2);
             } else {
