@@ -2,6 +2,7 @@
 #include "types.h"
 #include "bitboard.h"
 #include <string>
+#include "nnue.h"
 
 namespace Zobrist {
 extern U64 psq[12][64];
@@ -30,6 +31,7 @@ struct Position {
     U64 checkers;   // pieces giving check to side to move
     U64 pinned;     // own pieces pinned to own king
     int mg, eg;     // incremental PSQT+material, white perspective
+    Accumulator acc;
     int phase;
 
     void set_fen(const std::string& fen);

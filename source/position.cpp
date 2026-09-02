@@ -35,6 +35,7 @@ const int CastleMask[64] = {
 
 void Position::clear() {
     memset(this, 0, sizeof(Position));
+    NNUE::init_acc(acc);
     for (int s = 0; s < 64; s++) board[s] = NO_PIECE;
     ep = SQ_NONE;
     stm = WHITE;
@@ -42,6 +43,7 @@ void Position::clear() {
 
 void Position::put_piece(int p, int s) {
     board[s] = (uint8_t)p;
+    NNUE::add_piece(acc, p, s);
     byType[piece_type(p)] |= bit(s);
     byColor[piece_color(p)] |= bit(s);
     key ^= Zobrist::psq[p][s];
@@ -54,6 +56,7 @@ void Position::put_piece(int p, int s) {
 
 void Position::remove_piece(int s) {
     int p = board[s];
+    NNUE::remove_piece(acc, p, s);
     board[s] = NO_PIECE;
     byType[piece_type(p)] &= ~bit(s);
     byColor[piece_color(p)] &= ~bit(s);
@@ -67,6 +70,7 @@ void Position::remove_piece(int s) {
 
 void Position::move_piece(int from, int to) {
     int p = board[from];
+    NNUE::move_piece(acc, p, from, to);
     U64 ft = bit(from) | bit(to);
     board[from] = NO_PIECE;
     board[to] = (uint8_t)p;

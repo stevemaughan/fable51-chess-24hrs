@@ -186,6 +186,9 @@ int main(int argc, char** argv) {
             out("option name Hash type spin default 64 min 1 max 4096");
             out("option name MoveOverhead type spin default 40 min 0 max 5000");
             out("option name Threads type spin default 1 min 1 max 1");
+#ifdef USE_NNUE
+            out("option name UseNNUE type check default true");
+#endif
 #ifndef NO_TUNE_OPTIONS
             for (int i = 0; i < SParamCount; i++) out("option name " + std::string(SParams[i].name) + " type spin default " + std::to_string(*SParams[i].ptr) + " min -100000 max 100000");
 #endif
@@ -200,6 +203,11 @@ int main(int argc, char** argv) {
             while (ss >> tok) value += (value.empty() ? "" : " ") + tok;
             if (name == "Hash") { int mb = std::max(1, std::min(4096, atoi(value.c_str()))); TT.resize(mb); }
             else if (name == "MoveOverhead") MoveOverhead = std::max(0, std::min(5000, atoi(value.c_str())));
+            else if (name == "UseNNUE") {
+#ifdef USE_NNUE
+                NNUE::Enabled = (value == "true" || value == "1");
+#endif
+            }
             else for (int i = 0; i < SParamCount; i++) if (name == SParams[i].name) { *SParams[i].ptr = atoi(value.c_str()); sparams_changed(); }
         } else if (cmd == "ucinewgame") {
             wait_search();
@@ -242,6 +250,11 @@ int main(int argc, char** argv) {
             }
             out("moves" + ucis);
             out(pos.fen());
+        } else if (cmd == "nnuecheck") {
+            Position p = searcher.rootPos; Accumulator saved = p.acc; NNUE::init_acc(p.acc);
+            U64 b = p.pieces(); while (b) { int s = pop_lsb(b); NNUE::add_piece(p.acc, p.board[s], s); }
+            int diff = 0; for (int k = 0; k < 2; k++) for (int i = 0; i < NN_HL; i++) diff += std::abs(p.acc.v[k][i] - saved.v[k][i]);
+            out("nnue incremental diff " + std::to_string(diff) + " eval " + std::to_string(NNUE::evaluate(p.acc, p.stm)));
         } else if (cmd == "eval") {
             out("eval " + std::to_string(Eval::evaluate(searcher.rootPos)));
         }

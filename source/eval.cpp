@@ -2,6 +2,11 @@
 #include <algorithm>
 
 int PSQ_MG[12][64];
+#ifdef USE_NNUE
+bool NNUE::Enabled = true;
+#else
+bool NNUE::Enabled = false;
+#endif
 int PSQ_EG[12][64];
 const int PhaseInc[6] = {0, 1, 1, 2, 4, 0};
 
@@ -246,6 +251,7 @@ static Score eval_passed(const Position& pos, EvalInfo& ei) {
 }
 
 int evaluate(const Position& pos) {
+    if (NNUE::Enabled) return NNUE::evaluate(pos.acc, pos.stm);
     EvalInfo ei;
     memset(&ei, 0, sizeof(ei));
     // pawn attacks and king info
