@@ -52,3 +52,9 @@ Start: 2026-09-01T16:16:56-04:00. Deadline: 2026-09-02T16:16:56-04:00.
 - Tuning round 2 (subset, fresh 1.4M positions at 10k nodes): neutral (49%) — not adopted. Full-PSQT tuning with lambda 0.5 running in background (997 knobs, ~1 h).
 - A/B on engine13 at 5+0.05 (150 games each): AspDelta 40: -37 (reject). LmrDiv 200: +44 (candidate). Remaining: LmrDiv 300, RfpMargin 100, NmpBase 4, FutMargin 160, LmpBase 5, HistDiv 4000.
 - Next hour: finish A/B batch, adopt winners, verify combined build vs stash-25/30; PGO build test.
+## Hour 5 — 2026-09-01 20:05 (elapsed 3:48)
+- final/ still engine13f (~2880). engine16 (LmrDiv 200, FutMargin 160) = +30 vs engine13 (200 games, 5+0.05); to be verified vs stash-25 at 10+0.1 before install.
+- Full-PSQT Texel tuning (lambda 0.5): -44 → rejected. Eval tuning exhausted for now; params from round-1 subset tuning remain.
+- A/B batch 2 (engine16, 150 games each): RfpMargin 60 +44 (candidate), LmrDiv 170 +12 (neutral). Running: FutMargin 220, LmrCaptPct 30, QsDelta 120, SingMargin 3, SeeQuiet 60, LmrBase 110.
+- gprof unusable under MinGW static; skipped profiling.
+- Next: finish batch, build engine19 with winners, verify at 10+0.1 vs stash-25 (200 games), install; then time-management A/B (TmDiv/TmIncPct) at 10+0.1.
