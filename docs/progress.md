@@ -170,3 +170,6 @@ Start: 2026-09-01T16:16:56-04:00. Deadline: 2026-09-02T16:16:56-04:00.
 - vs stash-30 (3166): 61% (200) and 54% (80, loaded); vs stash-33 (3286): 41.5% (100) + 48.5% (200); vs stash-37 (3424): 25.5% (100). No time losses in any. Estimate ~3250 Elo (CCRL-blitz-anchored, ±40).
 ## Hour 27 — 2026-09-02 09:40 (elapsed 17:23)
 - final/ unchanged (engine49f, ~3250). Waiting on nn12 (HL512, epoch ~75/120) and datagen 6 (~90%) → nn13. Both chained to 200-game 10+0.1 tests vs nn8; a candidate replaces final/ only with a clear (>+30) result and a clean stash sanity run.
+## Hour 28 — 2026-09-02 10:15 (elapsed 17:58)
+- final/ unchanged (engine49f). nn12 (HL512, val 0.001877; accumulator check exact) playing nn8 at 10+0.1 (33/200). nn13 (HL384 on rounds 3-6 incl. NNUE-engine data, val 0.00179 at epoch 82) finishing, then its 200-game test.
+- Decision rule unchanged; hard stop for changes 15:15.
