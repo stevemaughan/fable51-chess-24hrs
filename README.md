@@ -284,7 +284,6 @@ All four engines were rated in the same run, under identical conditions.
   250 Elo of its own level, so the effect on its estimate is small.
 - The rating run used 64 MB hash rather than the 256 MB assumed in the
   benchmark rules, so that all engines compared on equal terms.
-
 - The engine's own estimate above (about 3250 ±30) agrees with the measured
   3277 ±23. Fable 5.1 finished **first of the four engines** in the series.
 - Reliability: zero losses on time, disconnects or illegal moves in the
